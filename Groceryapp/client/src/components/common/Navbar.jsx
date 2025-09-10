@@ -17,7 +17,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, user } = useLoginUser();
+  const { token, user,isLoading,isAuthenticated } = useLoginUser();
   const { data: cartData } = useGetCartDetailsQuery();
 
   const numberOfItems = cartData?.result?.data?.totalItems || 0;
@@ -101,7 +101,7 @@ const Navbar = () => {
               </span>
               <Cart />
             </button>
-            {token ? (
+            {isAuthenticated ? (
               <Profile user={user} />
             ) : (
               <button

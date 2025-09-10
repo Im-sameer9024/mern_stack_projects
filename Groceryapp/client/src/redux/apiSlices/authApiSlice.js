@@ -43,6 +43,13 @@ export const authApiSlice = createApi({
 
     GetLoginUser: builder.query({
       query: () => ({ url: "/status", method: "GET" }),
+      transformResponse:(response)=>{
+        return {
+          success:response.success,
+          user:response.user || null,
+          message:response.message
+        }
+      },
       providesTags: ["Auth"],
     }),
 

@@ -12,23 +12,28 @@ const useLoginUser = () => {
   // Only fetch if we have a token but no user data
   // const shouldSkip = !token
 
-  const { data: LoginUserData, isError } = useGetLoginUserQuery();
+  const { data: LoginUserData, error,isLoading } = useGetLoginUserQuery(undefined, {
+    skip: !!user, // Skip if we already have user data
+  });
 
   useEffect(() => {
-    if (LoginUserData) {
+    if (LoginUserData?.success && LoginUserData?.user) {
       dispatch(setToken("authenticated"));
       dispatch(setUser(LoginUserData?.user));
+    }else if(LoginUserData && !LoginUserData?.success){
+      dispatch(setToken(null));
+      dispatch(setUser(null));
     }
   }, [LoginUserData, dispatch]);
 
   useEffect(() => {
-    if (isError) {
+    if (error) {
       dispatch(setToken(null));
       dispatch(setUser(null));
     }
-  }, [isError, dispatch]);
+  }, [error, dispatch]);
 
-  return { token, user };
+  return { token, user,isLoading,isAuthenticated: !!token  && !!user};
 };
 
 export default useLoginUser;

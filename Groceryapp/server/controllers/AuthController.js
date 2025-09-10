@@ -193,11 +193,20 @@ const getLoginUserDetails = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Not Authenticated",
+        user:null
       });
     }
 
     const decoded = JWT.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+        user:null
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -206,6 +215,16 @@ const getLoginUserDetails = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in getLoginUserDetails controller:", error);
+
+    // Handle specific JWT errors
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(200).json({  // Changed from 401 to 200
+        success: false,
+        message: "Invalid or expired token",
+        user: null
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
