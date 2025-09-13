@@ -6,7 +6,7 @@ import ServicesSection from "../components/core/Home/ServicesSection";
 
 const HomePage = () => {
   return (
-    <section className=" py-16 flex flex-col gap-18   lg:gap-28">
+    <section className=" py-16 flex flex-col gap-18   lg:gap-28 min-h-screen">
       <HeroSection />
       <LatestCollectionSection />
       <BestCollectionSection />

@@ -3,14 +3,21 @@ import { FaBagShopping, FaBars } from "react-icons/fa6";
 import { FaTimes } from "react-icons/fa";
 import { Search } from "lucide-react";
 import { Button } from "../../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Profile from "./Profile";
 
-const NavbarIcons = ({ 
-  isSidebarOpen, 
-  searchBarVisible, 
-  onToggleSidebar, 
-  onToggleSearchBar 
+const NavbarIcons = ({
+  isSidebarOpen,
+  searchBarVisible,
+  onToggleSidebar,
+  onToggleSearchBar,
 }) => {
+  const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth);
+  console.log("token", token);
+
+
   return (
     <div className="flex items-center gap-4">
       {/* Search button - hidden when search bar is visible */}
@@ -33,10 +40,17 @@ const NavbarIcons = ({
         </span>
       </Link>
 
-      {/* User Login */}
-      <Button variant="forever" className="hidden md:block">
-        Login
-      </Button>
+      {token ? (
+        <Profile />
+      ) : (
+        <Button
+          onClick={() => navigate("/login")}
+          variant="forever"
+          className="hidden md:block"
+        >
+          Login
+        </Button>
+      )}
 
       {/* Mobile Menu Button */}
       <button

@@ -9,16 +9,26 @@ import Profile from "../core/Navbar/Profile";
 import { useSelector } from "react-redux";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
-import useLoginUser from "../../hooks/useLoginUser";
 import { useGetCartDetailsQuery } from "../../redux/apiSlices/cartApiSlice";
+import Cookies from "js-cookie";
+import { useGetLoginUserQuery } from "../../redux/apiSlices/authApiSlice";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, user,isLoading,isAuthenticated } = useLoginUser();
-  const { data: cartData } = useGetCartDetailsQuery();
+  const {token} = useSelector((state) => state.auth);
+
+
+  const { data: user, isLoading,refetch } = useGetLoginUserQuery(undefined, {
+    skip: !token,
+  });
+  console.log("user data", user);
+
+  const { data: cartData } = useGetCartDetailsQuery(undefined, {
+    skip: !token,
+  });
 
   const numberOfItems = cartData?.result?.data?.totalItems || 0;
 
@@ -101,8 +111,8 @@ const Navbar = () => {
               </span>
               <Cart />
             </button>
-            {isAuthenticated ? (
-              <Profile user={user} />
+            {token ? (
+              <Profile user={user?.data} isLoading={isLoading} refetch={refetch} />
             ) : (
               <button
                 onClick={() => navigate("/login")}

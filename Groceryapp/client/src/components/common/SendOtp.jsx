@@ -8,11 +8,15 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Loader2, MailCheck } from "lucide-react";
-import { useSelector } from "react-redux";
-import { useSignUpMutation } from "../../redux/apiSlices/authApiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useSendOtpMutation,
+  useSignUpMutation,
+} from "../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { setLoading } from "../../redux/slices/authSlice";
 
 // Define OTP validation schema - Numbers only
 const otpSchema = z.object({
@@ -24,12 +28,16 @@ const otpSchema = z.object({
 });
 
 const SendOtp = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpValue, setOtpValue] = useState("");
-  const { signupData } = useSelector((state) => state.auth);
+
+  //--------------------------------value form auth slice and redux--------------------
+
+  const { signupData, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [SignUp] = useSignUpMutation();
+  const [SendOtp] = useSendOtpMutation();
 
   useEffect(() => {
     if (!signupData) {
@@ -51,7 +59,8 @@ const SendOtp = () => {
   });
 
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
+    dispatch(setLoading(true));
+    const itemId = toast.loading("Verifying OTP...");
     console.log("OTP submitted:", data.otp);
 
     const finalData = {
@@ -65,16 +74,26 @@ const SendOtp = () => {
       console.log("response of send otp ", response, "final data ", finalData);
 
       if (response?.success) {
-        toast.success("User created successfully");
+        toast.success("User created successfully", {
+          id: itemId,
+          duration: 2000,
+        });
         navigate("/login");
       } else {
         navigate("/register");
-        toast.error(response.data?.message || response?.message);
+        toast.error(response.data?.message || response?.message, {
+          id: itemId,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.log("error occur in signup user", error);
+      toast.error(error?.data?.message || error?.message, {
+        id: itemId,
+        duration: 2000,
+      });
     } finally {
-      setIsSubmitting(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -97,10 +116,21 @@ const SendOtp = () => {
     }
   };
 
-  const handleResendOtp = async () => {
-    console.log("Resending OTP...");
-    // Simulate resend OTP API call
-    alert("New OTP has been sent to your email!");
+  const handleResendOtp = async (email) => {
+    const itemId = toast.loading("Resending OTP...");
+
+    try {
+      const response = await SendOtp({ email: email }).unwrap();
+
+      if (response?.success) {
+        toast.success("Otp sent successfully", { id: itemId, duration: 2000 });
+      } else {
+        navigate("/send-otp");
+      }
+    } catch (error) {
+      console.log("error occur in login user", error);
+      toast.error(error?.data?.message, { id: itemId, duration: 2000 });
+    }
   };
 
   return (
@@ -165,14 +195,14 @@ const SendOtp = () => {
             {/* Verify Button */}
             <button
               type="submit"
-              disabled={isSubmitting || otpValue.length !== 6}
+              disabled={loading || otpValue.length !== 6}
               className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
-                isSubmitting || otpValue.length !== 6
+                loading || otpValue.length !== 6
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               }`}
             >
-              {isSubmitting ? (
+              {loading ? (
                 <div className="flex items-center justify-center">
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
                   Verifying...
@@ -188,9 +218,9 @@ const SendOtp = () => {
                 Didn't receive the code?{" "}
                 <button
                   type="button"
-                  onClick={handleResendOtp}
+                  onClick={() => handleResendOtp(signupData?.email)}
                   className="text-green-600 hover:text-green-700 font-semibold transition-colors hover:underline"
-                  disabled={isSubmitting}
+                  disabled={loading}
                 >
                   Resend OTP
                 </button>

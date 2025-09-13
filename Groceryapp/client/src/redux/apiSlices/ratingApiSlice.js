@@ -13,6 +13,7 @@ export const ratingApiSlice = createApi({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Rating"],
     }),
 
     //----------------------------Get Average Rating of a Product---------------------

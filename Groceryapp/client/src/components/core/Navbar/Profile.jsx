@@ -1,24 +1,35 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, User, Mail } from "lucide-react"; // Import Lucide icons
-import { useLogoutUserMutation } from "../../../redux/apiSlices/authApiSlice";
+import { LogOut, User, Mail, Loader2, Loader } from "lucide-react"; // Import Lucide icons
+import {
+  useGetLoginUserQuery,
+  useLogoutUserMutation,
+} from "../../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setToken } from "../../../redux/slices/authSlice";
 
-const Profile = ({ user }) => {
+const Profile = ({ user, isLoading, refetch }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [LogoutUser] = useLogoutUserMutation();
 
   const handleLogout = async () => {
     const toastId = toast.loading("Logging out...");
+
     try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await LogoutUser();
-      toast.success("Logged out successfully", { id: toastId });
+
+      localStorage.clear();
+      dispatch(setToken(null));
+      await refetch();
+
+      toast.success("Logged out successfully", { id: toastId, duration: 2000 });
       navigate("/");
       // Close dropdown
       setIsDropdownOpen(false);
@@ -49,6 +60,10 @@ const Profile = ({ user }) => {
     },
   };
 
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
     <div
       className="relative"
@@ -59,7 +74,7 @@ const Profile = ({ user }) => {
       <div className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200">
         <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
           <img
-            src={user?.image || "/default-avatar.png"}
+            src={user?.image}
             alt="Profile"
             className="w-full h-full object-cover"
             onError={(e) => {

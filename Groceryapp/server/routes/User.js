@@ -20,7 +20,7 @@ router.post("/send-otp", sendOtp);
 router.post("/register", signup);
 router.post("/login", login);
 router.get("/logout", auth, isUser, logout);
-router.get("/status",auth,isUser, getLoginUserDetails);
+router.get("/status",auth, getLoginUserDetails);
 
 //--------------------------Routes for user password reset is here --------------------------
 router.post("/reset-password-token", auth, isUser, resetPasswordToken);

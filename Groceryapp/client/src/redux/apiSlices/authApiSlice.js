@@ -1,8 +1,20 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import Cookies from "js-cookie";
+
 
 export const authApiSlice = createApi({
   reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api", credentials: "include" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: "/api",
+    prepareHeaders: (headers,{getState}) => {
+      const token = getState().auth.token;
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+
   tagTypes: ["Auth"],
 
   endpoints: (builder) => ({
@@ -25,7 +37,7 @@ export const authApiSlice = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Auth"],
+      // invalidatesTags: ["Auth"],
     }),
 
     //------------------------Sign up user ------------------------
@@ -43,13 +55,6 @@ export const authApiSlice = createApi({
 
     GetLoginUser: builder.query({
       query: () => ({ url: "/status", method: "GET" }),
-      transformResponse:(response)=>{
-        return {
-          success:response.success,
-          user:response.user || null,
-          message:response.message
-        }
-      },
       providesTags: ["Auth"],
     }),
 
@@ -89,5 +94,5 @@ export const {
   useResetPasswordTokenMutation,
   useSignUpMutation,
   useGetLoginUserQuery,
-  useLogoutUserMutation
+  useLogoutUserMutation,
 } = authApiSlice;

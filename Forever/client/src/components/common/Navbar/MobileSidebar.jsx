@@ -3,9 +3,21 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const MobileSidebar = ({ isOpen, onClose, currentPath }) => {
+  const navigate = useNavigate();
+
+  const handleCart = () => {
+    navigate("/cart");
+    onClose();
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+    onClose();
+  };
+
   // Sidebar animation variants
   const sidebarVariants = {
     closed: {
@@ -91,7 +103,9 @@ const MobileSidebar = ({ isOpen, onClose, currentPath }) => {
                     key={item.path}
                     to={item.path}
                     className={`text-xl transition-colors active:underline hover:bg-gray-300 p-2 ${
-                      currentPath === item.path ? "bg-gray-200 font-semibold" : ""
+                      currentPath === item.path
+                        ? "bg-gray-200 font-semibold"
+                        : ""
                     }`}
                     onClick={onClose}
                   >
@@ -102,10 +116,18 @@ const MobileSidebar = ({ isOpen, onClose, currentPath }) => {
 
               {/* Mobile buttons */}
               <div className="pt-8 border-t border-gray-200 space-y-6 px-2">
-                <Button variant="forever" className="w-full" onClick={onClose}>
+                <Button
+                  onClick={handleCart}
+                  variant="forever"
+                  className="w-full"
+                >
                   Cart
                 </Button>
-                <Button variant="forever" className="w-full" onClick={onClose}>
+                <Button
+                  onClick={handleLogin}
+                  variant="forever"
+                  className="w-full"
+                >
                   Login
                 </Button>
               </div>

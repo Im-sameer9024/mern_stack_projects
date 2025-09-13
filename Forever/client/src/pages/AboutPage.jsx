@@ -79,7 +79,6 @@ const AboutPage = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 ">
-      <div className="max-w-6xl mx-auto">
         {/* Main Heading */}
         <motion.div
           className="text-center mb-16"
@@ -221,7 +220,6 @@ const AboutPage = () => {
             </motion.div>
           ))}
         </motion.div>
-      </div>
     </section>
   );
 };

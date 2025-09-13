@@ -6,14 +6,19 @@ import { loginSchema } from "../../validation/loginSchema";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setToken, setUser } from "../../redux/slices/authSlice";
 
 // Define login schema
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
 
+  //----------------------------value form redux authSlice ---------------------------
+  const {loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [Login] = useLoginMutation();
 
   const {
@@ -29,28 +34,36 @@ const LoginForm = () => {
     },
   });
 
+  // 1 day in milliseconds
+
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
+    dispatch(setLoading(true));
+    const itemId = toast.loading("Logging in...");
+
     console.log("Form data:", data);
 
     try {
-
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await Login(data).unwrap();
 
       console.log("response of login api ", response);
 
+
       if (response?.success) {
+        localStorage.setItem("token", response?.data?.token);
+        dispatch(setToken(response?.data?.token));
+        dispatch(setUser(response?.data));
         navigate("/");
-        toast.success("Login successful!");
+        toast.success("Login successful!", { id: itemId, duration: 2000 });
       } else {
         navigate("/login");
-        toast.error("Login failed!");
+        toast.error("Login failed!", { id: itemId, duration: 2000 });
       }
     } catch (error) {
       console.log("error occur in login user", error);
       toast.error(error?.data?.message);
     } finally {
-      setIsSubmitting(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -161,14 +174,14 @@ const LoginForm = () => {
             {/* Login Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loading}
               className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
-                isSubmitting
+                loading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               }`}
             >
-              {isSubmitting ? (
+              {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Signing In...

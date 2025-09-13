@@ -13,7 +13,7 @@ const sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email:email });
+    const user = await User.findOne({ email: email });
 
     if (user) {
       return res
@@ -73,7 +73,7 @@ const signup = async (req, res) => {
 
     //check user exists
 
-    const userExists = await User.findOne({ email:email });
+    const userExists = await User.findOne({ email: email });
 
     if (userExists) {
       return res.status(400).json({
@@ -127,12 +127,9 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    
-
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email:email });
-
+    const user = await User.findOne({ email: email });
 
     if (!user) {
       return res.status(404).json({
@@ -147,33 +144,31 @@ const login = async (req, res) => {
       accountType: user.accountType,
     };
 
-    if ( await bcrypt.compare(password, user.password)) {
-
+    if (await bcrypt.compare(password, user.password)) {
       const token = JWT.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "3d",
+        expiresIn: "1d",
       });
 
       user.token = token;
       user.password = undefined;
 
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: process.env.NODE_ENV === "Production" ? "Strict" : "Lax",
+        secure: process.env.NODE_ENV === "Production" ? true : false,
       };
 
       return res.cookie("token", token, options).status(200).json({
         success: true,
-        message: "Login successful",
-        token,
-        user,
+        message: "Login Successfully",
+        data: user,
       });
-    }else{
+    } else {
       return res.status(400).json({
         success: false,
         message: "Invalid Password",
-      })
+      });
     }
   } catch (error) {
     console.log("error occur in Login controller", error);
@@ -187,13 +182,16 @@ const login = async (req, res) => {
 
 const getLoginUserDetails = async (req, res) => {
   try {
-    const token = req.cookies.token;
+    const token =
+      req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.token;
+
+    console.log("tone is get in the Login user details", token);
 
     if (!token) {
       return res.status(401).json({
         success: false,
         message: "Not Authenticated",
-        user:null
+        user: null,
       });
     }
 
@@ -204,26 +202,17 @@ const getLoginUserDetails = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "User not found",
-        user:null
+        user: null,
       });
     }
 
     return res.status(200).json({
       success: true,
       message: "User found",
-      user,
+      data: user,
     });
   } catch (error) {
     console.log("Error in getLoginUserDetails controller:", error);
-
-    // Handle specific JWT errors
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(200).json({  // Changed from 401 to 200
-        success: false,
-        message: "Invalid or expired token",
-        user: null
-      });
-    }
 
     return res.status(500).json({
       success: false,
@@ -238,16 +227,9 @@ const logout = async (req, res) => {
     // Clear the token cookie
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      secure: process.env.NODE_ENV === "Production" ? true : false,
+      sameSite: process.env.NODE_ENV === "Production" ? "Strict" : "Lax",
     });
-
-    // // Optional: Clear any other auth-related cookies
-    // res.clearCookie('refreshToken', {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === 'production',
-    //   sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    // });
 
     // Send success response
     return res.status(200).json({

@@ -6,17 +6,17 @@ import { useNavigate } from "react-router-dom";
 import { registerSchema } from "../../validation/registerSchema";
 import { useSendOtpMutation } from "../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { setSignupData } from "../../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setSignupData } from "../../redux/slices/authSlice";
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  //-----------------------values from redux and state--------------------------
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
-
   const [SendOtp] = useSendOtpMutation();
+  const { loading } = useSelector((state) => state.auth);
 
   const {
     register,
@@ -33,17 +33,18 @@ const RegisterForm = () => {
   });
 
   const onSubmit = async (data) => {
-    setIsSubmitting(true);
+    dispatch(setLoading(true));
+    const itemId = toast.loading("Signing up...");
     console.log("Registration data:", data);
 
     try {
       const response = await SendOtp(data).unwrap();
 
-      console.log("response is here for the register page", response);
+      // console.log("response is here for the register page", response);
 
       if (response?.success) {
         navigate("/send-otp");
-        toast.success("Otp sent successfully");
+        toast.success("Otp sent successfully", { id: itemId, duration: 2000 });
         dispatch(setSignupData(data));
       } else {
         navigate("/register");
@@ -51,9 +52,9 @@ const RegisterForm = () => {
       }
     } catch (error) {
       console.log("error occur in login user", error);
-      toast.error(error?.data?.message);
+      toast.error(error?.data?.message, { id: itemId, duration: 2000 });
     } finally {
-      setIsSubmitting(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -183,14 +184,14 @@ const RegisterForm = () => {
             {/* Register Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loading}
               className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
-                isSubmitting
+                loading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               }`}
             >
-              {isSubmitting ? (
+              {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Creating Account...

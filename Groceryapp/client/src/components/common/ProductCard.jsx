@@ -20,9 +20,7 @@ const ProductCard = ({ singleProduct, index }) => {
   );
 
   const [AddToCart] = useAddToCartMutation();
-  const {refetch } = useGetCartDetailsQuery();
-
-
+  const { refetch } = useGetCartDetailsQuery();
 
   const handleAddToCart = async (productId, quantity = 1) => {
     try {
