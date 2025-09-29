@@ -14,6 +14,7 @@ import SendOtpPage from "./pages/SendOtpPage";
 import ForgotPassword from "./components/common/ResetPassword";
 import CheckEmail from "./components/common/CheckEmail";
 import CartPage from "./pages/CartPage";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 const App = () => {
   const location = useLocation();
@@ -24,17 +25,28 @@ const App = () => {
 
   return (
     <>
-      {!["/login", "/register", "/forgot-password","/send-otp","/check-email"].includes(
-        location.pathname
-      ) && <Navbar />}
+      {![
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/send-otp",
+        "/check-email",
+      ].includes(location.pathname) && <Navbar />}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterForm />} />
-        <Route path="/send-otp" element={<SendOtpPage/>} />
-        <Route path="/forgot-password" element={<ForgotPassword/>} />
-        <Route path="/check-email" element={<CheckEmail/>} />
-        <Route path="/cart" element={<CartPage/>} />
-        
+        <Route path="/send-otp" element={<SendOtpPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/check-email" element={<CheckEmail />} />
+
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/" element={<HomePage />} />
         <Route path="/all-products" element={<AllProductsPage />} />
@@ -47,9 +59,13 @@ const App = () => {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/:categoryName/:categoryId" element={<CategoryPage />} />
       </Routes>
-      {!["/login", "/register", "/forgot-password","/send-otp","/check-email"].includes(
-        location.pathname
-      ) && <Footer />}
+      {![
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/send-otp",
+        "/check-email",
+      ].includes(location.pathname) && <Footer />}
     </>
   );
 };

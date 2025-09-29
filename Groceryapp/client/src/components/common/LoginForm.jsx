@@ -1,22 +1,19 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, Lock, ShoppingCart } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { loginSchema } from "../../validation/loginSchema";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";
-import Cookies from "js-cookie";
 import { useDispatch, useSelector } from "react-redux";
+import { useLoginMutation } from "../../redux/apiSlices/authApiSlice";
 import { setLoading, setToken, setUser } from "../../redux/slices/authSlice";
-
-// Define login schema
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
 
-  //----------------------------value form redux authSlice ---------------------------
-  const {loading } = useSelector((state) => state.auth);
+  // Redux state and actions
+  const { loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [Login] = useLoginMutation();
@@ -34,36 +31,42 @@ const LoginForm = () => {
     },
   });
 
-  // 1 day in milliseconds
-
   const onSubmit = async (data) => {
     dispatch(setLoading(true));
     const itemId = toast.loading("Logging in...");
 
-    console.log("Form data:", data);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await Login(data).unwrap();
 
-      console.log("response of login api ", response);
-
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
 
       if (response?.success) {
-        localStorage.setItem("token", response?.data?.token);
-        dispatch(setToken(response?.data?.token));
+        localStorage.setItem("token", response?.token);
+        dispatch(setToken(response?.token));
         dispatch(setUser(response?.data));
         navigate("/");
-        toast.success("Login successful!", { id: itemId, duration: 2000 });
+        toast.success(response?.message, { itemId, duration: 2000 });
       } else {
         navigate("/login");
-        toast.error("Login failed!", { id: itemId, duration: 2000 });
+        toast.error(response?.message, { itemId, duration: 2000 });
+        dispatch(setToken(null));
+        dispatch(setUser(null));
       }
+
+      // console.log(
+      //   "response is here",
+      //   response,
+      //   "token is here from redux",
+      //   token,
+      //   "user details is here",
+      //   user
+      // );
     } catch (error) {
-      console.log("error occur in login user", error);
-      toast.error(error?.data?.message);
+      console.log("error occur ,", error);
+      toast.error(error?.data?.message, { itemId, duration: 2000 });
     } finally {
       dispatch(setLoading(false));
+      toast.dismiss(itemId);
     }
   };
 
@@ -108,6 +111,7 @@ const LoginForm = () => {
                       : "border-gray-300"
                   }`}
                   placeholder="Enter your email"
+                  disabled={loading}
                 />
               </div>
               {errors.email && (
@@ -139,11 +143,13 @@ const LoginForm = () => {
                       : "border-gray-300"
                   }`}
                   placeholder="Enter your password"
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={loading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -161,47 +167,44 @@ const LoginForm = () => {
 
             {/* Forgot Password Link */}
             <div className="flex justify-end">
-              <button
-                type="button"
+              <Link
+                to="/forgot-password"
                 className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
               >
-                <Link to={"/forgot-password"} className="">
-                  Forgot your password?
-                </Link>
-              </button>
+                Forgot your password?
+              </Link>
             </div>
 
             {/* Login Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 flex items-center justify-center ${
                 loading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               }`}
             >
               {loading ? (
-                <div className="flex items-center justify-center">
+                <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Signing In...
-                </div>
+                </>
               ) : (
                 "Sign In"
               )}
             </button>
 
             {/* Sign Up Link */}
-            <div className="text-center pt-4">
+            <div className="text-center pt-2">
               <p className="text-gray-600 text-sm">
                 Don't have an account?{" "}
-                <button
-                  onClick={() => navigate("/register")}
-                  type="button"
+                <Link
+                  to="/register"
                   className="text-green-600 hover:text-green-700 font-semibold transition-colors"
                 >
                   Sign up
-                </button>
+                </Link>
               </p>
             </div>
           </form>

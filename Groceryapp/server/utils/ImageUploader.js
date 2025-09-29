@@ -12,15 +12,12 @@ const ImageUploader = async (file, folder) => {
     };
 
     const result = await cloudinary.uploader.upload(file.tempFilePath, options);
+
+    console.log("result of image upload", result);
     return result;
   } catch (error) {
     console.log("error occur when uploading image to cloudinary", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error occur when uploading image to cloudinary",
-    });
   }
 };
-
 
 export default ImageUploader;

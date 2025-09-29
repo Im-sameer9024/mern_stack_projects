@@ -61,7 +61,7 @@ const SendOtp = () => {
   const onSubmit = async (data) => {
     dispatch(setLoading(true));
     const itemId = toast.loading("Verifying OTP...");
-    console.log("OTP submitted:", data.otp);
+    // console.log("OTP submitted:", data.otp);
 
     const finalData = {
       ...signupData,
@@ -70,8 +70,8 @@ const SendOtp = () => {
 
     try {
       const response = await SignUp(finalData).unwrap();
-
-      console.log("response of send otp ", response, "final data ", finalData);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); //wait for 1 second
+      // console.log("response of send otp ", response, "final data ", finalData);
 
       if (response?.success) {
         toast.success("User created successfully", {

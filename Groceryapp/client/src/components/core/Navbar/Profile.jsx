@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, User, Mail, Loader2, Loader } from "lucide-react"; // Import Lucide icons
 import {
-  useGetLoginUserQuery,
   useLogoutUserMutation,
 } from "../../../redux/apiSlices/authApiSlice";
 import toast from "react-hot-toast";

@@ -6,11 +6,15 @@ import mongoose from "mongoose";
 
 const createProduct = async (req, res) => {
   try {
+
     const { productName, price, quantity, about, category } = req.body;
     const image1 = req.files.productImage1;
     const image2 = req.files.productImage2;
     const image3 = req.files.productImage3;
     const image4 = req.files.productImage4;
+
+
+
 
     if (!productName || !category || !price || !quantity || !about) {
       return res
@@ -26,7 +30,8 @@ const createProduct = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    const product = await Product.find({ productName: productName });
+    const product = await Product.findOne({ productName:productName });
+
 
     if (product) {
       return res
@@ -44,6 +49,8 @@ const createProduct = async (req, res) => {
       image1,
       process.env.CLOUDINARY_FOLDER_NAME
     );
+
+
     const productImg2 = await ImageUploader(
       image2,
       process.env.CLOUDINARY_FOLDER_NAME
@@ -63,13 +70,15 @@ const createProduct = async (req, res) => {
       quantity: quantity,
       category: categoryDetails._id,
       images: [
-        productImg1.secure_url,
-        productImg2.secure_url,
-        productImg3.secure_url,
-        productImg4.secure_url,
+        productImg1?.secure_url,
+        productImg2?.secure_url,
+        productImg3?.secure_url,
+        productImg4?.secure_url,
       ],
       about: about,
     });
+
+    // console.log("createProducts",createProduct)
 
     await Category.findByIdAndUpdate(
       { _id: categoryDetails._id },
@@ -160,7 +169,7 @@ const getProductsByCategory = async (req, res) => {
     const products = await Product.find({
       category: categoryId,
     }).populate("category");
-    
+
     // console.log(products)
 
     // Added populate to get category details
@@ -221,10 +230,45 @@ const getBestSellerProducts = async (req, res) => {
   }
 };
 
+const searchProducts = async (req, res) => {
+  try {
+    const { q, category } = req.query;
+
+    const filter = {};
+    if (q) {
+      filter.$or = [
+        { productName: { $regex: q, $options: "i" } },
+        { about: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    if(category && mongoose.Types.ObjectId.isValid(category)){
+      filter.category = category
+    }
+
+    const products = await Product.find(filter).populate("category").exec();
+
+    return res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      data:products,
+    })
+
+  } catch (error) {
+    console.log("error occur",error)
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+
+    })
+  }
+};
+
 export {
   createProduct,
   getAllProducts,
   getProductDetails,
   getProductsByCategory,
   getBestSellerProducts,
+  searchProducts
 };

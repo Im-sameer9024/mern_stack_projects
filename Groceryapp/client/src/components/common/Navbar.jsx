@@ -10,7 +10,6 @@ import { useSelector } from "react-redux";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetCartDetailsQuery } from "../../redux/apiSlices/cartApiSlice";
-import Cookies from "js-cookie";
 import { useGetLoginUserQuery } from "../../redux/apiSlices/authApiSlice";
 
 const Navbar = () => {
@@ -18,17 +17,24 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const {token} = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
 
+  console.log("token",token)
 
-  const { data: user, isLoading,refetch } = useGetLoginUserQuery(undefined, {
+  const {
+    data: user,
+    isLoading,
+    refetch,
+  } = useGetLoginUserQuery(undefined, {
     skip: !token,
   });
-  console.log("user data", user);
+  // console.log("user data", user);
 
   const { data: cartData } = useGetCartDetailsQuery(undefined, {
     skip: !token,
   });
+
+  console.log("data cart data",cartData)
 
   const numberOfItems = cartData?.result?.data?.totalItems || 0;
 
@@ -112,7 +118,11 @@ const Navbar = () => {
               <Cart />
             </button>
             {token ? (
-              <Profile user={user?.data} isLoading={isLoading} refetch={refetch} />
+              <Profile
+                user={user?.data}
+                isLoading={isLoading}
+                refetch={refetch}
+              />
             ) : (
               <button
                 onClick={() => navigate("/login")}
@@ -187,7 +197,11 @@ const Navbar = () => {
 
                 <div className="flex flex-col gap-4">
                   {token ? (
-                    <Profile isMobile={true} />
+                    <Profile
+                      user={user?.data}
+                      isLoading={isLoading}
+                      refetch={refetch}
+                    />
                   ) : (
                     <button className="w-full px-4 py-2 text-white rounded-md bg-green-400 hover:bg-green-500 transition-colors duration-300">
                       Log In

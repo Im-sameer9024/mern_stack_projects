@@ -10,10 +10,11 @@ import {
   useGetCartDetailsQuery,
 } from "../../redux/apiSlices/cartApiSlice";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const ProductCard = ({ singleProduct, index }) => {
-  const [count, setCount] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const{token} = useSelector((state) => state.auth);
 
   const { data, isLoading, isError } = useGetAverageRatingQuery(
     singleProduct._id
@@ -23,6 +24,12 @@ const ProductCard = ({ singleProduct, index }) => {
   const { refetch } = useGetCartDetailsQuery();
 
   const handleAddToCart = async (productId, quantity = 1) => {
+
+    if(!token){
+      toast.error("Please login to add product to cart");
+      return;
+    }
+
     try {
       const response = await AddToCart({ productId, quantity }).unwrap();
       console.log("response ", response);

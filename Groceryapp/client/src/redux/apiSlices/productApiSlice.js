@@ -36,9 +36,24 @@ export const productApiSlice = createApi({
 
     //--------------------------Get All BestSeller Products---------------------------
     GetAllBestSellerProducts: builder.query({
-      query:() => "best-seller-products",
+      query: () => "best-seller-products",
       providesTags: ["product"],
-    })
+    }),
+
+    //--------------------------Search Products---------------------------
+    SearchProducts: builder.query({
+      query: (params = {}) => {
+        const { q, category } = params;
+
+        const queryParams = new URLSearchParams();
+
+        if (q) queryParams.append("q", q);
+        if (category) queryParams.append("category", category);
+
+        return `/search?${queryParams.toString()}`;
+      },
+      providesTags: ["product"],
+    }),
   }),
 });
 
@@ -48,4 +63,5 @@ export const {
   useGetProductQuery,
   useGetProductsByCategoryQuery,
   useGetAllBestSellerProductsQuery,
+  useSearchProductsQuery,
 } = productApiSlice;

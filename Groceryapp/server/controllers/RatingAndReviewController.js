@@ -129,47 +129,54 @@ const getAllRating = async (req, res) => {
   }
 };
 
-const checkUserReviewed = async(req,res) =>{
+const checkUserReviewed = async (req, res) => {
   try {
-
     const id = req.user.id;
-    const {productId} = req.params;
+    const { productId } = req.params;
 
-    if(!id){
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
-    if(!productId){
+    if (!productId) {
       return res.status(400).json({
         success: false,
         message: "ProductId id not found",
-      })
+      });
     }
 
     const userReviewed = await RatingAndReview.findOne({
       user: id,
       product: productId,
-    })
+    });
 
-    if(userReviewed){
+    if (userReviewed) {
       return res.status(200).json({
         success: true,
         message: "User already reviewed",
-        userReviewed
-      })
+        data: {
+          reviewed: true,
+        },
+      });
+    } else {
+      return res.status(200).json({
+        success: true,
+        message: "User not reviewed",
+        data: {
+          reviewed: false,
+        },
+      });
     }
-    
   } catch (error) {
-    console.log("error occur in check user reviewed",error)
+    console.log("error occur in check user reviewed", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-    })
-    
+    });
   }
-}
+};
 
-export { createRatingAndReview, getAverageRating, getAllRating };
+export { createRatingAndReview, getAverageRating, getAllRating,checkUserReviewed };

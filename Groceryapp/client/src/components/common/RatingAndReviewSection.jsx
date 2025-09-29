@@ -9,8 +9,14 @@ import { MdClose, MdOutlineAddComment } from "react-icons/md";
 import Popup from "./Popup/Popup";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import { CheckIcon } from "lucide-react";
 
-const RatingAndReviewSection = ({ productId, averageRating,refetchAverageRating }) => {
+const RatingAndReviewSection = ({
+  productId,
+  averageRating,
+  refetchAverageRating,
+  reviewData,
+}) => {
   const [open, setOpen] = useState(false);
 
   const [CreateRating] = useCreateRatingMutation();
@@ -41,6 +47,8 @@ const RatingAndReviewSection = ({ productId, averageRating,refetchAverageRating 
     refetch,
   } = useGetAllRatingsQuery(productId);
 
+  // console.log("all ratings",allRatings)
+
   const onSubmit = async (data) => {
     const formData = {
       ...data,
@@ -61,7 +69,7 @@ const RatingAndReviewSection = ({ productId, averageRating,refetchAverageRating 
         await refetchAverageRating();
       }
 
-      console.log("response ", response);
+      // console.log("response ", response);
 
       // Close the popup and reset the form
       setOpen(false);
@@ -133,14 +141,21 @@ const RatingAndReviewSection = ({ productId, averageRating,refetchAverageRating 
           </div>
         </div>
         <div>
-          <button
-            disabled={token ? false : true}
-            onClick={() => setOpen(true)}
-            className="bg-green-500 py-2 text-white rounded-md hover:bg-green-600 transition-all duration-200 ease-in-out px-4 flex items-center gap-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
-          >
-            <MdOutlineAddComment size={22} />
-            Write a Review
-          </button>
+          {reviewData?.data?.reviewed ? (
+            <div className=" border border-gray-300 p-2 rounded-md flex items-center gap-2 text-gray-500">
+              <CheckIcon className="text-green-500" />
+              User Already Reviewed
+            </div>
+          ) : (
+            <button
+              disabled={token ? false : true}
+              onClick={() => setOpen(true)}
+              className="bg-green-500 py-2 text-white rounded-md hover:bg-green-600 transition-all duration-200 ease-in-out px-4 flex items-center gap-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+            >
+              <MdOutlineAddComment size={22} />
+              Write a Review
+            </button>
+          )}
         </div>
       </div>
 
@@ -237,9 +252,9 @@ const RatingAndReviewSection = ({ productId, averageRating,refetchAverageRating 
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Customer Reviews
         </h3>
-        {allRatings && allRatings.allRating?.length > 0 ? (
+        { allRatings.length > 0 ? (
           <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
-            {allRatings.allRating?.map((rating) => (
+            {allRatings.map((rating) => (
               <div
                 key={rating._id}
                 className="flex gap-4 p-4 border-b border-gray-100 last:border-0"

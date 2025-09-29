@@ -40,7 +40,8 @@ const RegisterForm = () => {
     try {
       const response = await SendOtp(data).unwrap();
 
-      // console.log("response is here for the register page", response);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for 1 second
+
 
       if (response?.success) {
         navigate("/send-otp");

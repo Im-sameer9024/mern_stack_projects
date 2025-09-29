@@ -25,11 +25,23 @@ export const ratingApiSlice = createApi({
     //----------------------------Get All Ratings of a Product---------------------
 
     GetAllRatings: builder.query({
-      query:(productId)=> `/get-all-rating/${productId}`,
+      query: (productId) => `/get-all-rating/${productId}`,
+      transformResponse: (allRatings) => allRatings?.allRating?.reverse(),
+
       providesTags: ["Rating"],
-    })
+    }),
+
+    //----------------------------Check if User Reviewed---------------------
+    CheckUserReviewed: builder.query({
+      query: (productId) => `/check-user-reviewed/${productId}`,
+      providesTags: ["Rating"],
+    }),
   }),
 });
 
-export const { useCreateRatingMutation, useGetAverageRatingQuery,useGetAllRatingsQuery } =
-  ratingApiSlice;
+export const {
+  useCreateRatingMutation,
+  useGetAverageRatingQuery,
+  useGetAllRatingsQuery,
+  useCheckUserReviewedQuery,
+} = ratingApiSlice;

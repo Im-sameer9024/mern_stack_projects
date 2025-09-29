@@ -3,10 +3,13 @@ import React from "react";
 import ProductCard from "../common/ProductCard";
 import { useGetAllBestSellerProductsQuery } from "../../redux/apiSlices/productApiSlice";
 import ProductsSkeleton from "../common/skeleton/ProductsSkeleton";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
 const BestSeller = () => {
+  const { token } = useSelector((state) => state.auth);
+
   const {
     data: products,
     isLoading,
@@ -21,9 +24,9 @@ const BestSeller = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
@@ -33,9 +36,9 @@ const BestSeller = () => {
       opacity: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   const titleVariants = {
@@ -45,14 +48,14 @@ const BestSeller = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   if (isError) {
     return (
-      <motion.section 
+      <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="mt-10 lg:px-18 md:px-16 sm:px-14 px-4 py-4 w-full font-content flex flex-col gap-8"
@@ -67,23 +70,23 @@ const BestSeller = () => {
   }
 
   return (
-    <motion.section 
+    <motion.section
       initial="hidden"
       animate="visible"
       variants={containerVariants}
       className="mt-10 lg:px-18 md:px-16 sm:px-14 px-4 py-4 w-full font-content flex flex-col gap-8"
     >
-      <motion.h2 
+      <motion.h2
         variants={titleVariants}
         className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800"
       >
         Best Seller
       </motion.h2>
-      
+
       {isLoading ? (
         <ProductsSkeleton />
       ) : (
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
         >

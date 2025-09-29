@@ -1,7 +1,3 @@
-import {
-  loginSchemaValidator,
-  signupSchemaValidator,
-} from "../validation/Schema.js";
 import User from "../models/UserModel.js";
 import Otp from "../models/OtpModel.js";
 import OtpGenerator from "otp-generator";
@@ -100,6 +96,9 @@ const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let role = "";
+    email === "rskkhan89@gmail.com" ? (role = "admin") : (role = "user");
+
     const avatarUrl = `https://api.dicebear.com/5.x/initials/svg?seed=${name}`;
 
     const user = await User.create({
@@ -107,7 +106,7 @@ const signup = async (req, res) => {
       email,
       image: avatarUrl,
       password: hashedPassword,
-      accountType,
+      accountType: role,
     });
 
     return res.status(200).json({
@@ -149,9 +148,6 @@ const login = async (req, res) => {
         expiresIn: "1d",
       });
 
-      user.token = token;
-      user.password = undefined;
-
       const options = {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -161,7 +157,8 @@ const login = async (req, res) => {
 
       return res.cookie("token", token, options).status(200).json({
         success: true,
-        message: "Login Successfully",
+        message: "Login successful",
+        token: token,
         data: user,
       });
     } else {
@@ -183,7 +180,7 @@ const login = async (req, res) => {
 const getLoginUserDetails = async (req, res) => {
   try {
     const token =
-      req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.token;
+      req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
 
     console.log("tone is get in the Login user details", token);
 
@@ -191,7 +188,7 @@ const getLoginUserDetails = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Not Authenticated",
-        user: null,
+        data: null,
       });
     }
 
@@ -202,7 +199,7 @@ const getLoginUserDetails = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "User not found",
-        user: null,
+        data: null,
       });
     }
 
@@ -224,17 +221,21 @@ const getLoginUserDetails = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    // Clear the token cookie
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "Production" ? true : false,
-      sameSite: process.env.NODE_ENV === "Production" ? "Strict" : "Lax",
-    });
+    const token =
+      req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
 
-    // Send success response
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token found",
+      });
+    }
+
+    await res.clearCookie("token");
+
     return res.status(200).json({
       success: true,
-      message: "User logged out successfully",
+      message: "Logout successful",
     });
   } catch (error) {
     console.error("Logout error:", error);

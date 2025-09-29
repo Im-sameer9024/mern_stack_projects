@@ -4,12 +4,13 @@ import "dotenv/config.js";
 const auth = async (req, res, next) => {
   try {
     // console.log("error is here");
-    const token =  req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "") 
+    const token =
+      req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
 
     // console.log("token is here",token)
 
-
     if (!token) {
+      res.redirect("/");
       return res.status(401).json({
         success: false,
         message: "No token found",
@@ -18,6 +19,7 @@ const auth = async (req, res, next) => {
 
     try {
       const decoded = JWT.verify(token, process.env.JWT_SECRET);
+
       // console.log("decoded token is here", decoded);
       req.user = decoded;
     } catch (error) {

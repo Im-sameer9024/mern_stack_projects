@@ -1,20 +1,64 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import {
   useGetProductQuery,
   useGetProductsByCategoryQuery,
 } from "../redux/apiSlices/productApiSlice";
-import { useGetAverageRatingQuery } from "../redux/apiSlices/ratingApiSlice";
+import {
+  useCheckUserReviewedQuery,
+  useGetAverageRatingQuery,
+} from "../redux/apiSlices/ratingApiSlice";
 import { Loader2 } from "lucide-react";
 import Rating from "@mui/material/Rating";
 import ProductCard from "../components/common/ProductCard";
 import ProductsSkeleton from "../components/common/skeleton/ProductsSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import RatingAndReviewSection from "../components/common/RatingAndReviewSection";
+import { useAddToCartMutation, useGetCartDetailsQuery } from "../redux/apiSlices/cartApiSlice";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 const SingleProductPage = () => {
   const [index, setIndex] = useState(0);
   const { productId } = useParams();
+  const{token} = useSelector((state)=>state.auth)
+  const navigate = useNavigate()
+
+  //--------------- add to cart -------------------
+
+  const [AddToCart] = useAddToCartMutation();
+  const { refetch } = useGetCartDetailsQuery();
+
+   const handleAddToCart = async (productId, quantity = 1) => {
+  
+      if(!token){
+        toast.error("Please login to add product to cart");
+        return;
+      }
+  
+      try {
+        const response = await AddToCart({ productId, quantity }).unwrap();
+        console.log("response ", response);
+  
+        if (response?.result?.success) {
+          refetch();
+          toast.success(response.result?.message);
+        } else {
+          toast.error(response.result?.message);
+        }
+      } catch (error) {
+        console.log("error ", error);
+      }
+    };
+
+    const handleToBuy = async() =>{
+      if(!token){
+        toast.error("Please login to buy product");
+        return;
+      }
+      await handleAddToCart(productId);
+      navigate("/cart")
+    }
 
   //---------------------single Product Details api ----------------------
   const { data: singleProduct, isLoading: productLoading } =
@@ -24,7 +68,7 @@ const SingleProductPage = () => {
 
   //----------------------Products by category api ---------------------
 
-  // skip the rest api by the rtk query cache if the Id is not available till 
+  // skip the rest api by the rtk query cache if the Id is not available till
 
   const shouldBeSkip =
     singleProduct?.productDetails?.category?._id === undefined;
@@ -37,8 +81,15 @@ const SingleProductPage = () => {
 
   //----------------------Rating and Review api based on single Product ---------------------
 
-  const { data: RatingAndReview, isLoading: ratingLoading ,refetch: refetchAverageRating} =
-    useGetAverageRatingQuery(productId);
+  const {
+    data: RatingAndReview,
+    isLoading: ratingLoading,
+    refetch: refetchAverageRating,
+  } = useGetAverageRatingQuery(productId);
+
+  const { data: reviewData } = useCheckUserReviewedQuery(productId);
+
+  // console.log("reviewData", reviewData);
 
   return (
     <section className="  mt-10 lg:px-18 md:px-16 sm:px-14 px-4 py-4 w-full flex flex-col gap-8 font-content">
@@ -63,6 +114,7 @@ const SingleProductPage = () => {
               <img
                 src={singleProduct?.productDetails?.images[index]}
                 alt="img"
+                className=" h-full w-full object-cover"
               />
             </div>
           </div>
@@ -118,10 +170,10 @@ const SingleProductPage = () => {
 
             {/* buttons for buy and add to cart  */}
             <div className=" flex items-center justify-between gap-4">
-              <button className=" bg-gray-400 w-full py-2 text-white rounded-md hover:bg-gray-500 hover:scale-95 transition-all duration-200 ease-in-out">
+              <button onClick={handleAddToCart} className=" bg-gray-400 w-full py-2 text-white rounded-md hover:bg-gray-500 hover:scale-95 transition-all duration-200 ease-in-out">
                 Add To Cart
               </button>
-              <button className=" bg-green-400 w-full py-2 text-white rounded-md hover:bg-green-500 hover:scale-95 transition-all duration-200 ease-in-out">
+              <button onClick={handleToBuy} className=" bg-green-400 w-full py-2 text-white rounded-md hover:bg-green-500 hover:scale-95 transition-all duration-200 ease-in-out">
                 Buy Now
               </button>
             </div>
@@ -150,7 +202,12 @@ const SingleProductPage = () => {
       {/*--------------------- Rating and review section ---------------- */}
 
       <div>
-        <RatingAndReviewSection productId={productId} averageRating={RatingAndReview} refetchAverageRating={refetchAverageRating} />
+        <RatingAndReviewSection
+          productId={productId}
+          averageRating={RatingAndReview}
+          refetchAverageRating={refetchAverageRating}
+          reviewData={reviewData}
+        />
       </div>
     </section>
   );
