@@ -5,7 +5,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "/src/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -13,13 +13,16 @@
     "serve": "nodemon --watch src --ext ts,js --exec tsx src/index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.16.2",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "node-cron": "^4.2.1",
     "nodemon": "^3.1.10"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.5.2",
+    "prisma": "^6.16.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
