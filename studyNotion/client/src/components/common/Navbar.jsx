@@ -1,306 +1,186 @@
 /* eslint-disable no-unused-vars */
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import logo from "../../assets/Logo/Logo-Full-Light.png";
-import { NavbarLinks } from "../../data/navbar-links";
-import { Link, matchPath, useLocation } from "react-router-dom";
-import { AiOutlineShoppingCart } from "react-icons/ai";
-import { FiMenu, FiX } from "react-icons/fi";
-import ProfileDropDown from "../core/Auth/ProfileDropDown";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, memo, useCallback } from "react";
-import { FaCartShopping } from "react-icons/fa6";
-import { useGetAllCategoriesQuery } from "../../redux/apislices/categoryApiSlice";
-import { useGetUserDetailsQuery } from "../../redux/apislices/profileApiSlice";
-import { setUser } from "../../redux/slices/profileSlice";
-import { Loader2 } from "lucide-react";
+import Logo from '@/assets/Logo/Logo-Full-Light.png';
+import { NavLink, Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { Loader, Loader2, Menu, Search, ShoppingBag } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import MobileSidebar from './MobileSidebar';
+import { Button } from '../ui/button';
+import NavbarSearch from './NavbarSearch';
+import { useLogoutUser } from '@/features/Auth/hooks/useAuth';
+import { NavbarLinks } from '@/data/navbar-links';
+import { Spinner } from '../ui/spinner';
+import { useProfileDetails } from '@/features/Dashboard/Profile/hooks/useProfile';
 
 const Navbar = () => {
-  const { token, signupData } = useSelector((state) => state.auth);
-  const { user } = useSelector((state) => state.profile, shallowEqual);
-  const { totalItems } = useSelector((state) => state.cart);
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const dispatch = useDispatch();
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showShadow, setShowShadow] = useState('');
 
-  const { data: Details } = useGetUserDetailsQuery();
-  const { data: Categories, isLoading: isCategoriesLoading } =
-    useGetAllCategoriesQuery();
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  console.log("categoriess", Categories);
-
-  // console.log("date",Details)
+  const { token } = useSelector((state) => state.auth);
+  const { data, isPending } = useProfileDetails();
 
   useEffect(() => {
-    if (Details) {
-      dispatch(setUser(Details?.userDetails));
-    }
-  }, [Details, dispatch]);
+    const show = () => {
+      if (window.scrollY >= 10) {
+        setShowShadow('shadow-lg shadow-richBlack-700');
+      } else {
+        setShowShadow('');
+      }
+    };
 
-  // console.log("token,signupData",token,signupData)
+    window.addEventListener('scroll', show);
 
-  // Close mobile menu when route changes
+    return () => {
+      window.removeEventListener('scroll', show);
+    };
+  }, []);
+
   useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location]);
+    const handleClickOutside = (e) => {
+      const target = e.target;
 
-  const matchRoute = (route) => {
-    // Return false immediately if route is undefined or empty
-    if (!route) return false;
+      if (!target.closest('.navbar-dropdown')) {
+        setSearchOpen(false);
+      }
+    };
 
-    // Safely check if the current path matches the route
-    try {
-      return matchPath({ path: route }, location.pathname);
-    } catch (error) {
-      console.error("Route matching error:", error);
-      return false;
-    }
-  };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
-    <header
-      className={` w-full transition-all duration-300 ${
-        isScrolled
-          ? "bg-richblack-900/95 backdrop-blur-sm border-b border-richblack-700"
-          : "bg-richblack-900 border-b border-richblack-700"
-      } z-50`}
-    >
-      <div className="w-11/12 mx-auto max-w-7xl flex justify-between items-center py-3 md:py-4">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <img
-            src={logo}
-            alt="StudyNotion Logo"
-            className="h-8 md:h-9 w-auto"
-            loading="lazy"
-          />
-        </Link>
+    <>
+      <nav
+        className={`fixed top-0 left-0 w-full h-16 border-b border-richBlack-700 bg-richBlack-800 text-white z-50 ${showShadow}`}
+      >
+        <div className="w-11/12 max-w-6xl mx-auto flex items-center justify-between h-full">
+          {/* Logo */}
+          <Link to="/">
+            <img src={Logo} alt="logo" className="w-32" />
+          </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <ul className="flex items-center gap-6">
-            {NavbarLinks.map((link, i) => (
-              <li key={i}>
-                {link.title === "Catalog" ? (
-                  <div className="relative group">
-                    <button
-                      className={`flex items-center gap-1 ${
-                        matchRoute(link.path)
-                          ? "text-yellow-200"
-                          : "text-richblack-100 hover:text-yellow-200"
-                      } transition-colors duration-200`}
-                    >
+          {/* Desktop Links */}
+          <div className="hidden md:flex items-center gap-8 text-sm">
+            {NavbarLinks.map((link, i) => {
+              if (link.path === '/catalog') {
+                return (
+                  <div
+                    key={i}
+                    className="relative"
+                    onMouseEnter={() => setShowCatalog(true)}
+                    onMouseLeave={() => setShowCatalog(false)}
+                  >
+                    <span className="cursor-pointer hover:text-yellow-400 transition">
                       {link.title}
-                    </button>
-                    <div className="absolute left-0 top-full mt-2 w-48 bg-richblack-800 text-richblack-5 rounded-md shadow-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-richblack-600">
-                        {isCategoriesLoading ? (
-                          <div>
-                            <Loader2/>
+                    </span>
+
+                    <AnimatePresence>
+                      {showCatalog && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-8 left-0 bg-white text-black py-2 px-8 rounded-lg shadow-lg flex flex-col gap-2 z-50"
+                        >
+                          <div className="absolute w-10 h-10 bg-white top-0  rotate-45 z-40 left-3"></div>
+                          <div className=" font-semibold  flex flex-col gap-2 z-50">
+                            <Link to="/python" className="hover:text-yellow-500">
+                              Python
+                            </Link>
+                            <Link to="/java" className="hover:text-yellow-500">
+                              Java
+                            </Link>
                           </div>
-                        ) : (
-                          <div className="flex flex-col p-2">
-                            {Categories?.allCategories.map((category, i) => (
-                              <Link
-                              key={i}
-                                to={`/courses/${category?.name?.toLowerCase()}`}
-                                className="px-4 py-2 hover:bg-richblack-700 rounded-md transition-colors"
-                              >
-                                {category?.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                    </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                ) : (
-                  <Link
-                    to={link.path}
-                    className={`${
-                      matchRoute(link.path)
-                        ? "text-yellow-200 font-medium"
-                        : "text-richblack-100 hover:text-yellow-200"
-                    } transition-colors duration-200`}
-                  >
-                    {link.title}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </nav>
+                );
+              }
 
-        {/*----------- login and SignUp button ------------- */}
-        <div className=" flex items-center gap-4">
-          {user && user?.accountType !== "Instructor" && (
-            <Link
-              to={"/dashboard/cart"}
-              className="relative text-white hidden md:block"
-            >
-              <FaCartShopping className="  text-[1.3rem]" />
-              {totalItems > 0 && <span>{totalItems}</span>}
-            </Link>
-          )}
+              return (
+                <NavLink
+                  key={i}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    isActive ? 'text-yellow-400' : 'hover:text-yellow-400 transition'
+                  }
+                >
+                  {link.title}
+                </NavLink>
+              );
+            })}
+          </div>
 
-          {token === null && (
-            <Link
-              to={"/login"}
-              className=" hidden md:block border border-richblack-700 px-4 py-2 rounded-md bg-richblack-800 hover:bg-richblack-900 transition-all duration-200 text-white ease-in-out hover:scale-97"
-            >
-              Log In
-            </Link>
-          )}
+          {/* Desktop Buttons */}
+          {token ? (
+            <div className="hidden md:flex items-center gap-6 relative">
+              {/* 🔎 Search */}
+              <div className="relative navbar-dropdown ">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchOpen((prev) => !prev);
+                  }}
+                >
+                  <Search className="hover:text-yellow-400 transition hover:cursor-pointer" />
+                </button>
 
-          {token === null && (
-            <Link
-              to={"/signup"}
-              className=" md:block  hidden border text-white border-richblack-700 px-4 py-2 rounded-md bg-richblack-800 hover:bg-richblack-900 transition-all duration-200 ease-in-out hover:scale-97"
-            >
-              Sign Up
-            </Link>
-          )}
+                <NavbarSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+              </div>
 
-          {token !== null && <ProfileDropDown />}
-        </div>
-
-        <button
-          className="md:hidden text-richblack-100 focus:outline-none"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? (
-            <FiX size={24} className="text-white" />
-          ) : (
-            <FiMenu size={24} className="text-white" />
-          )}
-        </button>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <>
-              {/* Overlay */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black z-30 md:hidden"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-
-              {/* Sidebar */}
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "tween", ease: "easeInOut" }}
-                className="fixed inset-y-0 right-0 w-4/5 max-w-sm bg-richblack-800 z-40 shadow-2xl overflow-y-auto"
+              {/* 🛒 Cart */}
+              <Link
+                to={'/cart'}
+                className="relative hover:text-yellow-400 transition hover:cursor-pointer"
               >
-                {/* Close Button Header */}
-                <div className="sticky top-0 bg-richblack-800 z-10 p-4 flex justify-between items-center border-b border-richblack-700">
-                  <img
-                    src={logo}
-                    alt="StudyNotion Logo"
-                    className="h-7 w-auto"
-                  />
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-full hover:bg-richblack-700 transition-colors"
-                    aria-label="Close menu"
-                  >
-                    <FiX size={24} className="text-white" />
-                  </button>
-                </div>
+                <ShoppingBag />
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs px-1 rounded-full">
+                  2
+                </span>
+              </Link>
 
-                {/* Menu Content */}
-                <div className="p-6">
-                  <ul className="flex flex-col gap-4">
-                    {NavbarLinks.map((link, i) => (
-                      <li key={i}>
-                        {link.title === "Catalog" ? (
-                          <details className="group">
-                            <summary className="flex justify-between items-center py-3 px-2 rounded-lg hover:bg-richblack-700 cursor-pointer">
-                              <span className="text-richblack-5 font-medium">
-                                {link.title}
-                              </span>
-                              <span className="transition-transform group-open:rotate-180">
-                                ▼
-                              </span>
-                            </summary>
-                            <div className="pl-4 mt-1 flex flex-col gap-2">
-                              <Link
-                                to="/courses/python"
-                                className="py-2 px-2 rounded-lg hover:bg-richblack-700 text-richblack-100"
-                              >
-                                Python
-                              </Link>
-                              <Link
-                                to="/courses/javascript"
-                                className="py-2 px-2 rounded-lg hover:bg-richblack-700 text-richblack-100"
-                              >
-                                JavaScript
-                              </Link>
-                            </div>
-                          </details>
-                        ) : (
-                          <Link
-                            to={link.path}
-                            className={`block py-3 px-2 rounded-lg ${
-                              matchRoute(link.path)
-                                ? "bg-richblack-700 text-yellow-200 font-medium"
-                                : "hover:bg-richblack-700 text-richblack-5"
-                            }`}
-                          >
-                            {link.title}
-                          </Link>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+              {/* 👤 Profile */}
+              <div className="relative">
+                <Link
+                  to="/dashboard/my-profile"
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-richBlue-600 hover:cursor-pointer  transition flex justify-center items-center"
+                >
+                  {isPending ? (
+                    <Spinner className="size-5" />
+                  ) : (
+                    <img src={data.data?.avatar} alt="profile" />
+                  )}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-3">
+              <Button asChild className="border-2 border-richBlack-700">
+                <Link to="/login">Log In</Link>
+              </Button>
 
-                  {/* Auth Section */}
-                  <div className="mt-8 pt-6 border-t border-richblack-700">
-                    {user && user?.accountType !== "Instructor" && (
-                      <Link
-                        to="/dashboard/cart"
-                        className="flex items-center gap-3 py-3 px-4 rounded-lg bg-richblack-700 mb-4"
-                      >
-                        <AiOutlineShoppingCart size={20} />
-                        <span>Cart</span>
-                        {totalItems > 0 && (
-                          <span className="ml-auto bg-yellow-200 text-richblack-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                            {totalItems}
-                          </span>
-                        )}
-                      </Link>
-                    )}
-
-                    {token === null ? (
-                      <div className="flex flex-col gap-3">
-                        <Link
-                          to="/login"
-                          className="py-3 px-4 text-center rounded-lg border border-richblack-600 bg-richblack-700 text-richblack-5"
-                        >
-                          Log In
-                        </Link>
-                        <Link
-                          to="/signup"
-                          className="py-3 px-4 text-center rounded-lg bg-yellow-200 text-richblack-900 font-medium"
-                        >
-                          Sign Up
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="mt-4">
-                        <ProfileDropDown />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </>
+              <Button asChild className="border-2 border-richBlack-700">
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+            </div>
           )}
-        </AnimatePresence>
-      </div>
-    </header>
+
+          {/* Mobile Menu */}
+          <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
+            <Menu size={26} />
+          </button>
+        </div>
+      </nav>
+
+      {/* Sidebar */}
+      <MobileSidebar open={sidebarOpen} setOpen={setSidebarOpen} token={token} />
+    </>
   );
 };
 

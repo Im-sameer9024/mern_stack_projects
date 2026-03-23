@@ -1,35 +1,14 @@
 {
-  "name": "studynotion",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
-    "start": "npm run dev",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
-    "build": "concurrently \"npm run build:client\" \"npm run build:server\"",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
-    "test": "concurrently \"npm test --prefix client\" \"npm test --prefix server\"",
-    "lint": "concurrently \"npm run lint --prefix client\" \"npm run lint --prefix server\"",
-    "prepare": "husky install",
-    "format": "prettier --write \"**/*.{js,jsx,json,md}\""
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "format": "prettier --write .",
+    "dev": "concurrently -n BACKEND,FRONTEND -c green,blue \"npm run server\" \"npm run client\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
-    "concurrently": "^9.2.0"
+    "concurrently": "^9.2.1"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.1",
-    "@mui/styled-engine-sc": "^7.3.1",
-    "lucide-react": "^0.539.0",
-    "react-spinners": "^0.17.0",
-    "styled-components": "^6.1.19"
+    "prettier": "^3.8.1"
   }
 }

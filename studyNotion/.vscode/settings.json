@@ -1,15 +1,8 @@
 {
-    "cSpell.words": [
-        "aboutus",
-        "apiconnector",
-        "atleast",
-        "bghome",
-        "boxoffice",
-        "linkto",
-        "richblack",
-        "richblue",
-        "richkala",
-        "timeling",
-        "VITE"
-    ]
+  "cSpell.words": ["aboutus", "bghome", "Detailsgrid", "linkto", "persistor", "streamifier"],
+  "docwriter.progress.trackFunctions": true,
+  "docwriter.progress.trackMethods": true,
+  "docwriter.progress.trackClasses": true,
+  "docwriter.progress.trackTypes": true,
+  "snyk.advanced.autoSelectOrganization": true
 }
