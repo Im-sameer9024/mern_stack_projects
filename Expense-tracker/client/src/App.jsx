@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { Suspense } from "react";
+import { Outlet } from "react-router-dom";
 
 const App = () => {
   return (
-    <div className=''>App</div>
-  )
-}
+    <Suspense fallback={<div>Loading...</div>}>
+      <Outlet />
+    </Suspense>
+  );
+};
 
-export default App
+export default App;
