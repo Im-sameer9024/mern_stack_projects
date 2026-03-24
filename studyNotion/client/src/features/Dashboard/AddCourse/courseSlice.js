@@ -7,12 +7,12 @@ const initialState = {
   isEditCourse: false,
 
   // Section
-  section: null,        // full section object when editing a section title
+  section: null, // full section object when editing a section title
   sectionId: null,
   isEditSection: false,
 
   // SubSection (Lecture)
-  subSection: null,     // full subSection object when editing a lecture
+  subSection: null, // full subSection object when editing a lecture
   subSectionId: null,
   isEditSubSection: false,
 

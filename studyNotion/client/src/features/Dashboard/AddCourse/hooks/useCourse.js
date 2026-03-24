@@ -5,6 +5,7 @@ import { getErrorMessage } from '@/utils/helpers';
 import { useDispatch } from 'react-redux';
 import { clearCourseData, nextStep, setCourse, setCourseId } from '../courseSlice';
 import queryClient from '@/utils/reactQuery';
+import { useNavigate } from 'react-router-dom';
 
 export const useCreateCourse = () => {
   const dispatch = useDispatch();
@@ -41,7 +42,23 @@ export const useUpdateCourse = () => {
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
-      
+    },
+  });
+};
+
+export const useUpdateCourseStatus = () => {
+  const navigate = useNavigate()
+  return useMutation({
+    mutationFn: courseApiOperations.UpdateCourseStatus,
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['courses', data.data?._id] });
+      toast.success(data.message);
+      navigate("/dashboard/my-courses")
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 };

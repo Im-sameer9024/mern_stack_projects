@@ -4,7 +4,6 @@ import { getErrorMessage } from '@/utils/helpers';
 import { toast } from 'sonner';
 import queryClient from '@/utils/reactQuery';
 
-
 export const useGetSectionsByCourse = ({ courseId }) => {
   return useQuery({
     queryKey: ['sections', courseId],
@@ -12,7 +11,6 @@ export const useGetSectionsByCourse = ({ courseId }) => {
     enabled: !!courseId,
   });
 };
-
 
 export const useCreateSection = () => {
   return useMutation({

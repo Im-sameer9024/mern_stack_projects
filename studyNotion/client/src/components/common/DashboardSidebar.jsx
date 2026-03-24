@@ -78,38 +78,38 @@ const DashboardSidebar = () => {
           <Icons.VscSignOut size={14} className="shrink-0" />
           Log Out
         </button>
-          <Modal
-            isVisible={openLogout}
-            width={'lg:w-[25%]'}
-            content={
-              <div className="space-y-5">
-                {/* Header */}
-                <div className="flex justify-end items-center">
-                  <Button onClick={() => setOpenLogout(false)} disabled={logoutLoading}>
-                    <RxCross2 size={18} />
+        <Modal
+          isVisible={openLogout}
+          width={'lg:w-[25%]'}
+          content={
+            <div className="space-y-5">
+              {/* Header */}
+              <div className="flex justify-end items-center">
+                <Button onClick={() => setOpenLogout(false)} disabled={logoutLoading}>
+                  <RxCross2 size={18} />
+                </Button>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-center">Are you want to Logout ?</h3>
+                <div className=" flex  justify-center gap-4 mt-4">
+                  <Button
+                    onClick={LogoutUser}
+                    className="flex items-center gap-2 bg-yellow-400 text-black hover:bg-yellow-300"
+                  >
+                    <LogOut size={16} />
+                    {logoutLoading ? 'Loading....' : 'Logout'}
+                  </Button>
+                  <Button
+                    onClick={() => setOpenLogout(false)}
+                    className="flex items-center gap-2 text-black bg-slate-300 hover:bg-slate-400"
+                  >
+                    Cancel
                   </Button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-center">Are you want to Logout ?</h3>
-                  <div className=" flex  justify-center gap-4 mt-4">
-                    <Button
-                      onClick={LogoutUser}
-                      className="flex items-center gap-2 bg-yellow-400 text-black hover:bg-yellow-300"
-                    >
-                      <LogOut size={16} />
-                      {logoutLoading ? 'Loading....' : 'Logout'}
-                    </Button>
-                    <Button
-                      onClick={() => setOpenLogout(false)}
-                      className="flex items-center gap-2 text-black bg-slate-300 hover:bg-slate-400"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
               </div>
-            }
-          />
+            </div>
+          }
+        />
       </div>
     </div>
   );

@@ -8,9 +8,6 @@ import ffmpeg from 'fluent-ffmpeg';
 import ffprobeStatic from 'ffprobe-static';
 import { formatDuration } from '../utils/formatDuration.js';
 
-
-
-
 ffmpeg.setFfprobePath(ffprobeStatic.path);
 
 export const getLocalDuration = (filePath) =>
@@ -84,52 +81,44 @@ const CreateSubSection = async (req, res) => {
 
 const UpdateSubSection = async (req, res) => {
   try {
-    console.log('lskdfnls');
     const { title, description, subSectionId } = req.validatedData;
 
     const subSection = await SubSection.findById(subSectionId);
 
-    if (req.file) {
-      //delete old video
-      await cloudinary.uploader.destroy(subSection.video_publicId, {
-        resource_type: 'video',
-      });
-
-      //upload new video
-      const uploadNewVideo = await UploadVideo(
-        req.file.path,
-        String(process.env.CLOUDINARY_FOLDER_NAME_VIDEOS),
-        'video'
-      );
-
-      let durationInSeconds;
-
-      if (uploadNewVideo.duration) {
-        // small video case
-        durationInSeconds = Math.floor(uploadNewVideo.duration);
-      } else {
-        // large upload case
-        const metadata = await cloudinary.api.resource(uploadNewVideo.public_id, {
-          resource_type: 'video',
-        });
-
-        durationInSeconds = Math.floor(metadata.duration);
-      }
-
-      const formattedDuration = formatDuration(durationInSeconds);
-
-      subSection.videoUrl = uploadNewVideo.secure_url;
-      subSection.publicId = uploadNewVideo.public_id;
-      subSection.timeDuration = (await formattedDuration).toString();
-      subSection.durationInSeconds = durationInSeconds;
+    if (!subSection) {
+      return ApiError(res, 404, null, 'SubSection not found');
     }
 
+    // 🟢 CASE: New video uploaded
+    if (req.file) {
+      // delete old video (optional: can also move to background)
+      if (subSection.video_publicId) {
+        await cloudinary.uploader.destroy(subSection.video_publicId, {
+          resource_type: 'video',
+        });
+      }
+
+      // mark processing
+      subSection.videoStatus = 'processing';
+      subSection.videoUrl = '';
+      subSection.video_publicId = '';
+    }
+
+    // 🟢 Update text
     subSection.title = title;
     subSection.description = description;
 
     await subSection.save();
 
-    return ApiResponse(res, 200, subSection, 'SubSection updated successfully');
+    // ✅ Send response immediately
+    ApiResponse(res, 200, subSection, 'SubSection update started');
+
+    // 🔥 BACKGROUND VIDEO PROCESSING
+    if (req.file) {
+      processVideoUpload(req.file.path, subSection._id).catch((err) => {
+        console.error('Background update upload failed:', err);
+      });
+    }
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }
@@ -140,10 +129,6 @@ const DeleteSubSection = async (req, res) => {
     const { sectionId, subSectionId } = req.body;
 
     const subSection = await SubSection.findById(subSectionId);
-
-    await cloudinary.uploader.destroy(subSection.video_publicId, {
-      resource_type: 'video',
-    });
 
     await SubSection.findByIdAndDelete(subSectionId);
 
@@ -157,7 +142,10 @@ const DeleteSubSection = async (req, res) => {
       { new: true }
     );
 
-    return ApiResponse(res, 200, subSection, 'SubSection deleted successfully');
+    ApiResponse(res, 200, subSection, 'SubSection deleted successfully');
+    await cloudinary.uploader.destroy(subSection.video_publicId, {
+      resource_type: 'video',
+    });
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }

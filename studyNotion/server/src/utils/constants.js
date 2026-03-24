@@ -17,7 +17,7 @@ export const userGender = {
 
 export const videoStatus = {
   PROCESSING: 'processing',
-  COMPLETED: 'completed',
+  COMPLETED: 'ready',
   FAILED: 'failed',
 };
 

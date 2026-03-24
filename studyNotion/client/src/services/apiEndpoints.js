@@ -38,18 +38,19 @@ export const ratingAndReviewApiUrls = {
 
 export const courseApiUrls = {
   CREATE_COURSE: '/course/create-course',
-  UPDATE_COURSE:'/course/update-course',
+  UPDATE_COURSE: '/course/update-course',
   GET_ALL_COURSE: '/course/get-all-courses',
   GET_COURSE_DETAILS: (courseId) => `/course/get-course-details/${courseId}`,
   GET_COURSES_BY_INSTRUCTOR: (page) => `/course/get-courses-by-instructor?page=${page}&limit=10`,
   DELETE_COURSE: `/course/delete-course`,
+  UPDATE_COURSE_STATUS:"/course/update-course-status"
 };
 
 export const sectionApiUrls = {
   CREATE_SECTION: '/section/create-section',
   UPDATE_SECTION: '/section/update-section',
   DELETE_SECTION: '/section/delete-section',
-  GET_SECTIONS_BY_COURSE:(courseId) =>  `/section/get-all-sections/${courseId}`,
+  GET_SECTIONS_BY_COURSE: (courseId) => `/section/get-all-sections/${courseId}`,
 };
 
 export const subSectionApiUrls = {

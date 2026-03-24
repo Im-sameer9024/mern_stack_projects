@@ -21,8 +21,7 @@ export const useCreateSubSection = () => {
 
 export const useUpdateSubSection = () => {
   return useMutation({
-    mutationFn: ({ subSectionId, data }) =>
-      subSectionApiOperations.UpdateSubSection({ subSectionId, data }),
+    mutationFn: ({ data }) => subSectionApiOperations.UpdateSubSection(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['sections', variables.courseId],

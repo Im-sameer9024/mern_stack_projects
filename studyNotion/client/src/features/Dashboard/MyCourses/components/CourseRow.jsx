@@ -37,7 +37,9 @@ const CourseRow = ({ course, onEdit, onDelete }) => {
       {/* Info */}
       <div className="flex-1 min-w-0  space-y-1.5">
         <h3 className="text-base font-semibold text-white leading-snug line-clamp-1">{title}</h3>
-        <p className="text-sm text-richBlack-300 line-clamp-2 leading-relaxed">{description.length > 25 ? `${ description.slice(25)}...`: description}</p>
+        <p className="text-sm text-richBlack-300 line-clamp-2 leading-relaxed">
+          {description.length > 25 ? `${description.slice(25)}...` : description}
+        </p>
         <p className="text-xs text-richBlack-400">Created: {formatDate(createdAt)}</p>
         <CourseStatusBadge status={status} />
       </div>

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
 
 const Modal = ({ isVisible, content, width }) => {
+  if (!isVisible) return null;
   return (
     <AnimatePresence>
       {isVisible && (

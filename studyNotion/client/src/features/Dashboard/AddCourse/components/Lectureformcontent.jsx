@@ -1,26 +1,53 @@
-// components/CourseBuilder/LectureForm/LectureFormContent.jsx
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
 import LectureVideoUpload from './LectureVideoUpload';
 
-// ── Zod schema ─────────────────────────────────────────────────────────────
-const lectureSchema =(isEdit) => z.object({
-   file: isEdit
+// ── Zod schema ──────────────────────────────────────────────────────────────
+
+const lectureSchema = (isEdit) =>
+  z.object({
+    // Edit mode: file is optional — user may keep the existing video.
+    // Create mode: file is required — must upload a video.
+    file: isEdit
       ? z.any().optional()
       : z.any().refine((f) => f !== null && f !== undefined, {
-          message: 'Please upload a lecture video or image',
+          message: 'Please upload a lecture video',
         }),
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-});
+    title: z.string().min(3, 'Title must be at least 3 characters'),
+    description: z.string().min(10, 'Description must be at least 10 characters'),
+  });
 
-// ── shared form body (used for both create & edit) ─────────────────────────
-const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel, isLoading }) => {
-  
+// ─────────────────────────────────────────────────────────────────────────────
+// LectureFormContent
+// ─────────────────────────────────────────────────────────────────────────────
+
+// FIX: Removed the useEffect + reset pattern entirely.
+//
+// WHY IT WAS BROKEN:
+// useEffect runs AFTER the first render. On that first render useForm already
+// initialised with the old/empty defaultValues. Calling reset() inside useEffect
+// caused a second render with correct values, but only IF the dependency array
+// changed — which it didn't on subsequent opens of the same lecture because
+// the memo reference was stable.
+//
+// THE FIX:
+// Pass defaultValues directly into useForm(). This works reliably because
+// Modal returns null when closed, so LectureFormContent fully UNMOUNTS.
+// On the next open it REMOUNTS fresh, and useForm() reads the new defaultValues
+// at construction time — no useEffect needed at all.
+
+const LectureFormContent = ({
+  mode = 'create',
+  lecture,
+  defaultValues,
+  onSubmit,
+  onCancel,
+  isLoading,
+}) => {
   const isEdit = mode === 'edit';
-  
+
   const {
     register,
     control,
@@ -28,6 +55,8 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
     formState: { errors },
   } = useForm({
     resolver: zodResolver(lectureSchema(isEdit)),
+    // defaultValues are set once at mount. Since the modal unmounts on close,
+    // this is always fresh data when the modal re-opens.
     defaultValues: defaultValues ?? {
       file: null,
       title: '',
@@ -35,13 +64,12 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
     },
   });
 
-
   return (
     <>
-      {/* ── Modal header ── */}
+      {/* ── Header ── */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-white">
-          {isEdit ? 'Editing Lecture' : 'Add Lecture'}
+          {isEdit ? 'Edit Lecture' : 'Add Lecture'}
         </h2>
         <button
           type="button"
@@ -56,7 +84,7 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
 
       {/* ── Form ── */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Video Upload */}
+        {/* Video upload — Controller needed because it's an uncontrolled file input */}
         <Controller
           name="file"
           control={control}
@@ -65,11 +93,12 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
               value={field.value}
               onChange={field.onChange}
               error={errors.file?.message}
+              lecture={lecture}
             />
           )}
         />
 
-        {/* Lecture Title */}
+        {/* Title */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-white">
             Lecture Title <span className="text-red-400">*</span>
@@ -83,8 +112,6 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
           />
           {errors.title && <p className="text-xs text-red-400">{errors.title.message}</p>}
         </div>
-
-        
 
         {/* Description */}
         <div className="space-y-1.5">
@@ -109,10 +136,11 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
           <button
             type="button"
             onClick={onCancel}
+            disabled={isLoading}
             className="px-5 py-2.5 rounded-md text-sm font-medium
                        bg-richBlack-700 border border-richBlack-500
                        text-richBlack-200 hover:text-white hover:border-richBlack-400
-                       transition-colors"
+                       transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -127,10 +155,10 @@ const LectureFormContent = ({ mode = 'create', defaultValues, onSubmit, onCancel
             {isLoading && (
               <span
                 className="w-4 h-4 border-2 border-black border-t-transparent
-                               rounded-full animate-spin"
+                           rounded-full animate-spin"
               />
             )}
-            {isEdit ? 'Save Edits' : 'Create Lecture'}
+            {isEdit ? 'Save Changes' : 'Create Lecture'}
           </button>
         </div>
       </form>

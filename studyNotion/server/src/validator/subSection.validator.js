@@ -22,6 +22,7 @@ const subSectionDataUpdateValidator = z.object({
     .min(3, { message: 'Description must be at least 3 characters long' })
     .max(200, { message: 'Description must be at most 50 characters long' }),
   subSectionId: z.string({ message: 'subSectionId is required' }),
+  sectionId: z.string().optional(),
 });
 
-export { subSectionDataValidator,subSectionDataUpdateValidator };
+export { subSectionDataValidator, subSectionDataUpdateValidator };

@@ -19,8 +19,8 @@ export const useDeleteCourse = () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       toast.success(data.message);
     },
-     onError: (error) => {
-          toast.error(getErrorMessage(error));
-        },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
   });
 };

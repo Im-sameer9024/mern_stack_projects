@@ -42,13 +42,9 @@ const CourseInformationForm = () => {
   const { data: categories, isPending: categoryLoading } = useGetAllCategory();
   const { data: SingleCourse } = useGetSingleCourse(courseId);
 
-  
-
   const isSubmitting = isLoading || isUpdatingCourse;
 
-  const existingThumbnail = isEditCourse
-    ? (SingleCourse?.data?.thumbnail ?? null)
-    : null;
+  const existingThumbnail = isEditCourse ? (SingleCourse?.data?.thumbnail ?? null) : null;
 
   const categoryOptions = useMemo(() => {
     if (!categories?.data?.category) return [];
@@ -240,11 +236,14 @@ const CourseInformationForm = () => {
                      disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting
-            ? isEditCourse ? 'Saving…' : 'Creating…'
-            : isEditCourse ? 'Save Changes' : 'Create Course'}
+            ? isEditCourse
+              ? 'Saving…'
+              : 'Creating…'
+            : isEditCourse
+              ? 'Save Changes'
+              : 'Create Course'}
         </Button>
 
-      
         {/*
           EDIT mode only: "Next" button
           - type="button" so it never triggers form submit

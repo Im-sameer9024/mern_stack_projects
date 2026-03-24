@@ -98,7 +98,6 @@ const UpdateProfileImage = async (req, res) => {
       { new: true, select: '-password' } // ✅ exclude password at DB level
     );
 
-
     return ApiResponse(res, 200, updatedUser, 'Profile Image Updated Successfully');
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);

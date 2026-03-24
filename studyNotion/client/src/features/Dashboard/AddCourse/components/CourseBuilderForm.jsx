@@ -17,21 +17,13 @@ import {
   useUpdateSubSection,
 } from '../hooks/useSubSection';
 import { useDispatch, useSelector } from 'react-redux';
-import { Spinner } from '@/components/ui/spinner';
-import {
-  nextStep,
-  prevStep,
-  setIsEditSection,
-  setIsEditSubSection,
-  setSection,
-  setSectionId,
-  setSubSection,
-  setSubSectionId,
-} from '../courseSlice';
+import { nextStep, prevStep, setIsEditSection, setSection, setSectionId } from '../courseSlice';
 
-const InlineSpinner = () => (
-  <Loader2 size={14} className="animate-spin text-yellow-400 shrink-0" />
-);
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const InlineSpinner = () => <Loader2 size={14} className="animate-spin text-yellow-400 shrink-0" />;
 
 const IconBtn = ({ onClick, children, title, disabled }) => (
   <button
@@ -46,6 +38,10 @@ const IconBtn = ({ onClick, children, title, disabled }) => (
   </button>
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LectureRow
+// ─────────────────────────────────────────────────────────────────────────────
+
 const LectureRow = ({ lecture, sectionId, onDelete, onEdit, isUpdating, isDeleting }) => {
   const isBusy = isUpdating || isDeleting;
   return (
@@ -57,7 +53,11 @@ const LectureRow = ({ lecture, sectionId, onDelete, onEdit, isUpdating, isDeleti
                  bg-richBlack-800 border border-richBlack-600 transition-opacity"
     >
       <div className="flex items-center gap-2 text-sm text-richBlack-100">
-        {isBusy ? <InlineSpinner /> : <AlignLeft size={15} className="text-richBlack-400 shrink-0" />}
+        {isBusy ? (
+          <InlineSpinner />
+        ) : (
+          <AlignLeft size={15} className="text-richBlack-400 shrink-0" />
+        )}
         <span className={isBusy ? 'text-richBlack-400' : ''}>{lecture.title}</span>
         {isUpdating && <span className="text-xs text-richBlack-400">Saving…</span>}
         {isDeleting && <span className="text-xs text-richBlack-400">Deleting…</span>}
@@ -66,13 +66,21 @@ const LectureRow = ({ lecture, sectionId, onDelete, onEdit, isUpdating, isDeleti
         <IconBtn title="Edit lecture" disabled={isBusy} onClick={() => onEdit(sectionId, lecture)}>
           <Pencil size={15} />
         </IconBtn>
-        <IconBtn title="Delete lecture" disabled={isBusy} onClick={() => onDelete(sectionId, lecture._id)}>
+        <IconBtn
+          title="Delete lecture"
+          disabled={isBusy}
+          onClick={() => onDelete(sectionId, lecture._id)}
+        >
           <Trash size={15} />
         </IconBtn>
       </div>
     </motion.div>
   );
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SectionTitleEditor
+// ─────────────────────────────────────────────────────────────────────────────
 
 const SectionTitleEditor = ({ initialName, onSave, onCancel, isSaving }) => {
   const [value, setValue] = useState(initialName);
@@ -99,13 +107,23 @@ const SectionTitleEditor = ({ initialName, onSave, onCancel, isSaving }) => {
   );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CLOSED_MODAL = { isOpen: false, mode: 'create', lecture: null, sectionId: null };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CourseBuilderForm
+// ─────────────────────────────────────────────────────────────────────────────
 
 const CourseBuilderForm = () => {
   const dispatch = useDispatch();
-  const { courseId, sectionId: editingSectionId, isEditSection } = useSelector(
-    (state) => state.course
-  );
+  const {
+    courseId,
+    sectionId: editingSectionId,
+    isEditSection,
+  } = useSelector((state) => state.course);
 
   const [sectionTitle, setSectionTitle] = useState('');
   const [modalState, setModalState] = useState(CLOSED_MODAL);
@@ -115,8 +133,6 @@ const CourseBuilderForm = () => {
   const [deletingLecture, setDeletingLecture] = useState(new Set());
   const [updatingLecture, setUpdatingLecture] = useState(new Set());
   const [addingLectureTo, setAddingLectureTo] = useState(new Set());
-
-  // ✅ Tracks whether the modal's API call is in-flight
   const [isModalLoading, setIsModalLoading] = useState(false);
 
   const { data: CourseSections, isPending } = useGetSectionsByCourse({ courseId });
@@ -133,7 +149,10 @@ const CourseBuilderForm = () => {
   // ── Section handlers ──────────────────────────────────────────────────────
 
   const addSection = () => {
-    if (!sectionTitle.trim()) { toast.error('Enter section title'); return; }
+    if (!sectionTitle.trim()) {
+      toast.error('Enter section title');
+      return;
+    }
     CreateSection({ name: sectionTitle, courseId });
     setSectionTitle('');
   };
@@ -145,7 +164,10 @@ const CourseBuilderForm = () => {
   };
 
   const saveEditSection = (newName) => {
-    if (!newName.trim()) { toast.error('Section title cannot be empty'); return; }
+    if (!newName.trim()) {
+      toast.error('Section title cannot be empty');
+      return;
+    }
     UpdateSection(
       { sectionId: editingSectionId, name: newName, courseId },
       { onSuccess: cancelEditSection }
@@ -173,60 +195,71 @@ const CourseBuilderForm = () => {
     );
   };
 
-  const toggleSection = (id) =>
-    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleSection = (id) => setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
 
   // ── SubSection handlers ───────────────────────────────────────────────────
 
   const openCreateModal = (sectionId) => {
-    dispatch(setIsEditSubSection(false));
-    dispatch(setSubSection(null));
-    dispatch(setSubSectionId(null));
     setModalState({ isOpen: true, mode: 'create', lecture: null, sectionId });
   };
 
   const openEditModal = (sectionId, lecture) => {
-    dispatch(setSubSection(lecture));
-    dispatch(setSubSectionId(lecture._id));
-    dispatch(setIsEditSubSection(true));
     setModalState({ isOpen: true, mode: 'edit', lecture, sectionId });
   };
 
-  // ✅ closeModal also resets isModalLoading — safe to call any time
   const closeModal = () => {
     setModalState(CLOSED_MODAL);
     setIsModalLoading(false);
-    dispatch(setIsEditSubSection(false));
-    dispatch(setSubSection(null));
-    dispatch(setSubSectionId(null));
   };
 
-  // ✅ KEY FIX:
-  // - setIsModalLoading(true) before the API call → submit button shows spinner
-  // - closeModal() only called inside try (on success)
-  // - setIsModalLoading(false) in finally → button resets even on error
-  // - On error: modal stays open so the user can retry or fix their input
   const handleLectureSubmit = async (formData, sectionId, lectureId) => {
+    // ── Build FormData ──────────────────────────────────────────────────────
+    // Every field the backend needs must be appended here.
+    // multer parses these into req.body so Zod can validate them.
     const data = new FormData();
     data.append('title', formData.title);
     data.append('description', formData.description);
     data.append('sectionId', sectionId);
-    if (formData.file) data.append('file', formData.file);
+
+    // subSectionId must be in FormData for the update validator to pass.
+    // It is NOT passed as a separate URL param — the route is a fixed path,
+    // so the only way the backend receives it is through req.body (via multer).
+    if (lectureId) {
+      data.append('subSectionId', lectureId);
+    }
+
+    // Only append a file if the user actually picked a new one.
+    // If formData.file is a string it is the existing Cloudinary URL —
+    // sending it as a FormData text field makes multer set req.file to
+    // undefined and the controller errors. Omitting it tells the backend
+    // to keep the existing video untouched.
+    if (formData.file instanceof File) {
+      data.append('file', formData.file);
+    }
 
     setIsModalLoading(true);
 
     try {
       if (lectureId) {
+        // ── UPDATE ──────────────────────────────────────────────────────────
+        // Pass `data` (the FormData) directly as the request body.
+        // courseId is only used by the hook's onSuccess to invalidate the
+        // correct query cache — it is NOT sent to the backend.
         setUpdatingLecture((prev) => new Set(prev).add(lectureId));
-        await UpdateSubSection({ subSectionId: lectureId, data, courseId });
+
+        await UpdateSubSection({ data, courseId });
+
         setUpdatingLecture((prev) => {
           const next = new Set(prev);
           next.delete(lectureId);
           return next;
         });
       } else {
+        // ── CREATE ──────────────────────────────────────────────────────────
         setAddingLectureTo((prev) => new Set(prev).add(sectionId));
+
         await CreateSubSection({ data, courseId });
+
         setAddingLectureTo((prev) => {
           const next = new Set(prev);
           next.delete(sectionId);
@@ -234,11 +267,9 @@ const CourseBuilderForm = () => {
         });
       }
 
-      // ✅ Only close on success
       closeModal();
     } catch {
-      // Error toast is handled inside the hook's onError.
-      // Modal stays open so the user can retry.
+      // Error toast handled in hook's onError
       setIsModalLoading(false);
     }
   };
@@ -299,8 +330,14 @@ const CourseBuilderForm = () => {
                   ) : (
                     <>
                       <div className="flex items-center gap-2.5 text-sm flex-1 min-w-0">
-                        {isSectionDeleting ? <InlineSpinner /> : <AlignLeft size={16} className="shrink-0" />}
-                        <span className={`truncate ${isSectionDeleting ? 'text-richBlack-400' : ''}`}>
+                        {isSectionDeleting ? (
+                          <InlineSpinner />
+                        ) : (
+                          <AlignLeft size={16} className="shrink-0" />
+                        )}
+                        <span
+                          className={`truncate ${isSectionDeleting ? 'text-richBlack-400' : ''}`}
+                        >
                           {section.name}
                         </span>
                         {isSectionDeleting && (
@@ -308,16 +345,30 @@ const CourseBuilderForm = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
-                        <IconBtn title="Edit section" disabled={isSectionDeleting} onClick={() => startEditSection(section)}>
+                        <IconBtn
+                          title="Edit section"
+                          disabled={isSectionDeleting}
+                          onClick={() => startEditSection(section)}
+                        >
                           <Pencil size={15} />
                         </IconBtn>
-                        <IconBtn title="Delete section" disabled={isSectionDeleting} onClick={() => handleDeleteSection(section._id)}>
+                        <IconBtn
+                          title="Delete section"
+                          disabled={isSectionDeleting}
+                          onClick={() => handleDeleteSection(section._id)}
+                        >
                           {isSectionDeleting ? <InlineSpinner /> : <Trash size={16} />}
                         </IconBtn>
-                        <IconBtn title={isOpen ? 'Collapse' : 'Expand'} disabled={isSectionDeleting} onClick={() => toggleSection(section._id)}>
+                        <IconBtn
+                          title={isOpen ? 'Collapse' : 'Expand'}
+                          disabled={isSectionDeleting}
+                          onClick={() => toggleSection(section._id)}
+                        >
                           <ChevronUp
                             size={18}
-                            className={`transition-transform duration-200 ${isOpen ? 'rotate-0' : 'rotate-180'}`}
+                            className={`transition-transform duration-200 ${
+                              isOpen ? 'rotate-0' : 'rotate-180'
+                            }`}
                           />
                         </IconBtn>
                       </div>
@@ -350,7 +401,10 @@ const CourseBuilderForm = () => {
                                  disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isAddingLecture ? (
-                        <><InlineSpinner /><span className="text-richBlack-400">Adding lecture…</span></>
+                        <>
+                          <InlineSpinner />
+                          <span className="text-richBlack-400">Adding lecture…</span>
+                        </>
                       ) : (
                         '+ Add Lecture'
                       )}
@@ -379,7 +433,14 @@ const CourseBuilderForm = () => {
             className="bg-yellow-500 hover:bg-yellow-400 text-black font-medium
                        disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {isCreatingSection ? <><Loader2 size={15} className="animate-spin" />Adding…</> : '+ Add Section'}
+            {isCreatingSection ? (
+              <>
+                <Loader2 size={15} className="animate-spin" />
+                Adding…
+              </>
+            ) : (
+              '+ Add Section'
+            )}
           </Button>
         </div>
       </div>
@@ -403,7 +464,6 @@ const CourseBuilderForm = () => {
         </Button>
       </div>
 
-      {/* ✅ isLoading passed so the submit button inside LectureFormContent shows spinner */}
       <LectureModal
         isOpen={modalState.isOpen}
         mode={modalState.mode}

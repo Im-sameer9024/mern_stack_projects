@@ -325,6 +325,33 @@ const DeleteCourse = async (req, res) => {
   }
 };
 
+const UpdateCourseStatus = async (req, res) => {
+  try {
+    const { status, courseId } = req.body;
+
+    if (!status) {
+      return ApiResponse(res, 400, null, 'Status is required');
+    }
+
+    if (!courseId) {
+      return ApiResponse(res, 400, null, 'Course id is required');
+    }
+
+    const course = await Course.findByIdAndUpdate(courseId, { status }, { new: true }).lean();
+
+    if (!course) {
+      return ApiResponse(res, 404, null, 'Course not found');
+    }
+
+    const mess =
+      status === 'published' ? 'Course published successfully' : 'Course draft successfully';
+
+    return ApiResponse(res, 200, course, mess);
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
 export {
   CreateCourse,
   GetAllCourses,
@@ -332,4 +359,5 @@ export {
   GetAllCoursesByInstructor,
   UpdateCourse,
   DeleteCourse,
+  UpdateCourseStatus,
 };
