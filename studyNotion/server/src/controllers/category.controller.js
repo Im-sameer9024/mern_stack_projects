@@ -46,23 +46,29 @@ const CategoryPageDetails = async (req, res) => {
       return ApiResponse(res, 400, null, 'Category Id is required');
     }
 
-    const selectedCategory = await Category.findById(categoryId).populate('courses').exec();
+    const selectedCategory = await Category.findById(categoryId).populate({
+      path: 'courses',
+      match: { status: 'published' }, // only include published courses
+    }).exec();
 
     if (!selectedCategory) {
       return ApiResponse(res, 404, [], 'Category Data not found');
     }
 
     const differentCategories = await Category.find({
-      _id: {
-        $ne: categoryId,
-      },
+      _id: { $ne: categoryId },
     })
-      .populate('courses')
+      .populate({
+        path: 'courses',
+        match: { status: 'published' }, // only include published courses
+      })
       .exec();
 
     // top selling courses
 
-    const topSellingCourses = await Course.find({})
+    const topSellingCourses = await Course.find({
+      status: 'published',
+    })
       .sort({
         studentsEnrolled: -1,
       })

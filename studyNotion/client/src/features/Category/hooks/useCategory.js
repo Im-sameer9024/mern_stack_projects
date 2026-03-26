@@ -7,3 +7,10 @@ export const useGetAllCategory = () => {
     queryFn: useCategoryOperations.GetAllCategory,
   });
 };
+
+export const useGetCategoryDetails = (categoryId) => {
+  return useQuery({
+    queryKey: ['category', categoryId],
+    queryFn: () => useCategoryOperations.GetCategoryDetails(categoryId),
+  });
+};

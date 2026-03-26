@@ -12,6 +12,7 @@ import ratingAndReviewRoute from './routes/rating.route.js';
 import forgotPasswordRoute from './routes/resetPassword.route.js';
 import courseRoute from './routes/course.route.js';
 import cloudinaryWebhook from './routes/webhook.route.js';
+import CartRoute from './routes/cart.route.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/v1', ratingAndReviewRoute);
 app.use('/api/v1', forgotPasswordRoute);
 app.use('/api/v1', courseRoute);
 app.use('/api/webhook', cloudinaryWebhook);
+app.use('/api/v1', CartRoute);
 
 app.get('/', (req, res) => {
   return res.json({

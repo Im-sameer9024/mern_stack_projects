@@ -43,7 +43,15 @@ export const courseApiUrls = {
   GET_COURSE_DETAILS: (courseId) => `/course/get-course-details/${courseId}`,
   GET_COURSES_BY_INSTRUCTOR: (page) => `/course/get-courses-by-instructor?page=${page}&limit=10`,
   DELETE_COURSE: `/course/delete-course`,
-  UPDATE_COURSE_STATUS:"/course/update-course-status"
+  UPDATE_COURSE_STATUS: '/course/update-course-status',
+};
+
+export const cartApiUrls = {
+  ADD_TO_CART: '/course/add-to-cart',
+  GET_CART_DETAILS: '/course/get-cart',
+  REMOVE_CART_ITEM: '/course/remove-from-cart',
+  CREATE_ORDER:"/payment/capture",
+  ORDER_VERIFY:"/payment/verify"
 };
 
 export const sectionApiUrls = {

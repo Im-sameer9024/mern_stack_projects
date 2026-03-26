@@ -131,8 +131,7 @@ const LectureVideoUpload = ({ value, onChange, error }) => {
           </div>
         ) : (
           <>
-            <Spinner />
-            {/* <div
+            <div
               className="w-12 h-12 rounded-full bg-richBlack-600 border border-richBlack-500
                             flex items-center justify-center"
             >
@@ -143,7 +142,7 @@ const LectureVideoUpload = ({ value, onChange, error }) => {
                 Drop a video here or <span className="text-yellow-400">browse</span>
               </p>
               <p className="text-xs text-richBlack-500 mt-1">MP4, MOV, AVI up to 1 GB</p>
-            </div> */}
+            </div>
           </>
         )}
 

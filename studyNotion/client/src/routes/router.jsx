@@ -25,6 +25,8 @@ import EnrolledCourses from '@/features/Dashboard/EnrolledCourses/pages/Enrolled
 import AddCoursePage from '@/features/Dashboard/AddCourse/pages/AddCoursePage';
 import TeacherRoute from '@/components/common/TeacherRoute';
 import MyCourses from '@/features/Dashboard/MyCourses/pages/MyCourses';
+import CategoryCourses from '@/features/Category/pages/CategoryCourses';
+import CourseDetail from '@/features/Course/pages/CourseDetail';
 
 const HomePage = lazy(() => import('@/features/Home/pages/HomePage'));
 const AboutPage = lazy(() => import('@/features/About/pages/AboutPage'));
@@ -50,8 +52,16 @@ export const router = createBrowserRouter([
             element: <ContactPage />,
           },
           {
-            path: 'cart',
+            path: '/cart',
             element: <CartPage />,
+          },
+          {
+            path: '/category/:categoryId',
+            element: <CategoryCourses />,
+          },
+          {
+            path: '/course/:courseId',
+            element: <CourseDetail />,
           },
         ],
       },

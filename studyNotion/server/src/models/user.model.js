@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Profile',
     },
+    cart:[{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course'
+    }],
     courses: [
       {
         type: mongoose.Schema.Types.ObjectId,

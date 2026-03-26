@@ -1,11 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { FaStar } from 'react-icons/fa';
 import { MdDeleteOutline } from 'react-icons/md';
+import { useRemoveFromCart } from '../hooks/useCart';
+import CourseDetailSkeleton from '@/features/Course/components/Coursedetailskeleton';
 
 const CartItem = ({ course }) => {
+
+  const{mutate: removeItemFromCart,isPending: isRemovingItemFromCart} = useRemoveFromCart()
+
+
+  if (isRemovingItemFromCart) return <CourseDetailSkeleton />;
+
+
   return (
     <div className="flex gap-5 py-6 border-b border-richBlack-700">
-      <img src={course.image} alt="course" className="w-40 h-28 rounded-md object-cover" />
+      <img src={course.thumbnail} alt="course" className="w-40 h-28 rounded-md object-cover" />
 
       <div className="flex flex-col flex-1 gap-2">
         <h3 className="text-lg font-semibold max-w-lg">{course.title}</h3>
@@ -28,7 +37,7 @@ const CartItem = ({ course }) => {
       </div>
 
       <div className="flex flex-col items-end justify-between">
-        <Button className="flex items-center gap-1 text-red-400 hover:text-red-500">
+        <Button onClick={()=> removeItemFromCart({courseId:course._id})} disabled={isRemovingItemFromCart}  className="flex items-center gap-1 text-red-400 hover:text-red-500">
           <MdDeleteOutline size={20} />
           Remove
         </Button>

@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { RxCross2 } from 'react-icons/rx';
 import { LogOut } from 'lucide-react';
 import { useProfileDetails } from '@/features/Dashboard/Profile/hooks/useProfile';
+import { Badge } from '../ui/badge';
 
 const DashboardSidebar = () => {
   const { data, isLoading, isError, error } = useProfileDetails();
@@ -28,29 +29,34 @@ const DashboardSidebar = () => {
         {isLoading ? (
           <div className="text-white p-4 text-center">Loading...</div>
         ) : (
-          sidebarLinks.map((link) => {
-            if (link.type && link.type !== role) return null;
+          <>
+          <Badge className=" capitalize mb-2 bg-yellow-900 text-yellow-400">
+            {role}
+          </Badge>
+            {sidebarLinks.map((link) => {
+              if (link.type && link.type !== role) return null;
 
-            const Icon = Icons[link.icon];
+              const Icon = Icons[link.icon];
 
-            return (
-              <NavLink
-                key={link.id}
-                to={link.path}
-                className={({ isActive }) =>
-                  `flex items-center text-xs gap-3 px-6 py-3 transition-all
+              return (
+                <NavLink
+                  key={link.id}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `flex items-center text-xs gap-3 px-6 py-3 transition-all
         ${
           isActive
             ? 'bg-yellow-900 text-yellow-400 border-l-4 border-yellow-400'
             : 'text-richBlack-200 hover:bg-richBlack-700'
         }`
-                }
-              >
-                <Icon size={14} className="shrink-0" />
-                <span className="hidden md:block whitespace-nowrap">{link.name}</span>
-              </NavLink>
-            );
-          })
+                  }
+                >
+                  <Icon size={14} className="shrink-0" />
+                  <span className="hidden md:block whitespace-nowrap">{link.name}</span>
+                </NavLink>
+              );
+            })}
+          </>
         )}
       </div>
 
@@ -78,6 +84,7 @@ const DashboardSidebar = () => {
           <Icons.VscSignOut size={14} className="shrink-0" />
           Log Out
         </button>
+
         <Modal
           isVisible={openLogout}
           width={'lg:w-[25%]'}

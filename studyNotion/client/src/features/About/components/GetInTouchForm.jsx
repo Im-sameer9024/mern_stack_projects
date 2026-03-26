@@ -17,9 +17,6 @@ import { Button } from '@/components/ui/button';
 import { GetInTouchFormSchema } from '../validation/GetInTouch.validation';
 import { useGetInTouch } from '@/features/Auth/hooks/useAuth';
 
-const underlineInputStyle =
-  'bg-richBlack-800 border-b-2 border-richBlack-600 border-x-0 border-t-0   outline-none';
-
 const GetInTouchForm = ({ heading, para }) => {
   const {
     register,
@@ -93,7 +90,7 @@ const GetInTouchForm = ({ heading, para }) => {
               control={control}
               render={({ field }) => (
                 <Select disabled={isPending} onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className={`w-fit ${underlineInputStyle}`}>
+                  <SelectTrigger className={`w-fit bg-richBlack-700 border border-richBlack-600 `}>
                     <SelectValue placeholder="+91" />
                   </SelectTrigger>
 
@@ -114,7 +111,7 @@ const GetInTouchForm = ({ heading, para }) => {
               type="tel"
               {...register('contactNumber')}
               placeholder="12345 67890"
-              className={`w-full ${underlineInputStyle}`}
+              className={`w-full bg-richBlack-700 border border-richBlack-600   pr-10 `}
               disabled={isPending}
             />
           </div>
@@ -131,7 +128,7 @@ const GetInTouchForm = ({ heading, para }) => {
             {...register('message')}
             rows={12}
             placeholder="Enter your message"
-            className={`w-full ${underlineInputStyle} resize-none pt-2 h-30`}
+            className={`w-full  resize-none pt-2 h-30 bg-richBlack-700 border border-richBlack-600`}
             disabled={isPending}
           />
 

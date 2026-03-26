@@ -19,6 +19,14 @@ export const useCategoryOperations = {
     return response.data;
   },
 
+  GetCategoryDetails: async (categoryId) => {
+    const response = await apiConnector({
+      method: 'GET',
+      url: GET_CATEGORY_DETAILS(categoryId),
+    });
+    return response.data;
+  },
+
   GetAllCategory: async () => {
     const response = await apiConnector({
       method: 'GET',

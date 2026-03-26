@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
-const CTAButton = ({ children, linkto, active = false }) => {
+const CTAButton = ({ children, linkto, onClick, active = false }) => {
   return (
     <Button
+      onClick={onClick}
       asChild
       className={` transition-all duration-200 hover:scale-95 border-b ${
         active

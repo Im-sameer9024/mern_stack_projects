@@ -14,8 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const underlineInputStyle =
-  'bg-richBlack-800 border-b-2 border-richBlack-600 border-x-0 border-t-0 outline-none';
+
 
 const ProfileDetailsForm = ({ setOpenForm, additionalDetails }) => {
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
@@ -62,7 +61,7 @@ const ProfileDetailsForm = ({ setOpenForm, additionalDetails }) => {
             control={control}
             render={({ field }) => (
               <Select disabled={isPending} onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger className={`w-full ${underlineInputStyle}`}>
+                <SelectTrigger className={`w-full bg-richBlack-700 border border-richBlack-600`}>
                   <SelectValue placeholder="Select Gender" />
                 </SelectTrigger>
 
@@ -110,7 +109,7 @@ const ProfileDetailsForm = ({ setOpenForm, additionalDetails }) => {
             rows={5}
             placeholder="Tell us about yourself"
             disabled={isPending}
-            className={`w-full ${underlineInputStyle} resize-none pt-2`}
+            className={`w-full bg-richBlack-700 border border-richBlack-600 resize-none pt-2`}
           />
 
           {errors.about && <span className="text-red-400 text-xs">{errors.about.message}</span>}

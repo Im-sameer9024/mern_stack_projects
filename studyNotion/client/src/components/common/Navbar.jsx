@@ -12,6 +12,7 @@ import { useLogoutUser } from '@/features/Auth/hooks/useAuth';
 import { NavbarLinks } from '@/data/navbar-links';
 import { Spinner } from '../ui/spinner';
 import { useProfileDetails } from '@/features/Dashboard/Profile/hooks/useProfile';
+import { useGetAllCategory } from '@/features/Category/hooks/useCategory';
 
 const Navbar = () => {
   const [showCatalog, setShowCatalog] = useState(false);
@@ -22,6 +23,9 @@ const Navbar = () => {
 
   const { token } = useSelector((state) => state.auth);
   const { data, isPending } = useProfileDetails();
+  const { data: categories, isPending: categoriesPending } = useGetAllCategory();
+
+  const categoryData = categories?.data?.category;
 
   useEffect(() => {
     const show = () => {
@@ -87,14 +91,17 @@ const Navbar = () => {
                           transition={{ duration: 0.2 }}
                           className="absolute top-8 left-0 bg-white text-black py-2 px-8 rounded-lg shadow-lg flex flex-col gap-2 z-50"
                         >
-                          <div className="absolute w-10 h-10 bg-white top-0  rotate-45 z-40 left-3"></div>
+                          <div className="absolute w-6 h-6 bg-white -top-1  rotate-45 z-40 left-3"></div>
                           <div className=" font-semibold  flex flex-col gap-2 z-50">
-                            <Link to="/python" className="hover:text-yellow-500">
-                              Python
-                            </Link>
-                            <Link to="/java" className="hover:text-yellow-500">
-                              Java
-                            </Link>
+                            {categoryData.map((cat) => (
+                              <Link
+                                to={`/category/${cat._id}`}
+                                key={cat._id}
+                                className="text-nowrap hover:text-yellow-500"
+                              >
+                                {cat.name}
+                              </Link>
+                            ))}
                           </div>
                         </motion.div>
                       )}
@@ -154,7 +161,7 @@ const Navbar = () => {
                   {isPending ? (
                     <Spinner className="size-5" />
                   ) : (
-                    <img src={data.data?.avatar} alt="profile" />
+                      <img src={data.data?.avatar} alt="profile" />
                   )}
                 </Link>
               </div>
