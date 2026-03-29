@@ -46,10 +46,12 @@ const CategoryPageDetails = async (req, res) => {
       return ApiResponse(res, 400, null, 'Category Id is required');
     }
 
-    const selectedCategory = await Category.findById(categoryId).populate({
-      path: 'courses',
-      match: { status: 'published' }, // only include published courses
-    }).exec();
+    const selectedCategory = await Category.findById(categoryId)
+      .populate({
+        path: 'courses',
+        match: { status: 'published' }, // only include published courses
+      })
+      .exec();
 
     if (!selectedCategory) {
       return ApiResponse(res, 404, [], 'Category Data not found');

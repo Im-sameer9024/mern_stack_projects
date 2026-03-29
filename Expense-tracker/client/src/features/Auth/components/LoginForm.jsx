@@ -1,56 +1,56 @@
-import CustomButton from "@/shared/components/custom/CustomButton";
-import InputField from "@/shared/components/custom/InputField";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { LoginValidationSchema } from "@/shared/validation/auth.validationSchema";
+import CustomButton from '@/shared/components/custom/CustomButton';
+import InputField from '@/shared/components/custom/InputField';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LoginTest, LoginValidationSchema } from '@/features/Auth/validation/auth.validationSchema';
+import { useLoginUser } from '../hooks/useAuth';
 
 const LoginForm = () => {
+  const { mutateAsync: LoginUser, isPending: isLoginUserLoading } = useLoginUser();
+
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm({
-    resolver: zodResolver(LoginValidationSchema),
+    resolver: zodResolver(LoginTest),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
-  const OnSubmitHandler = () => {};
+  const OnSubmitHandler = async (data) => {
+    await LoginUser(data);
+  };
 
   return (
     <form onSubmit={handleSubmit(OnSubmitHandler)} className=" space-y-2">
       {/*-------------- Email field ------------------- */}
       <InputField
-        label={"Email Address"}
-        placeholder={"john123@gmail.com"}
-        type={"text"}
-        name={"email"}
+        label={'Email Address'}
+        placeholder={'john123@gmail.com'}
+        type={'text'}
+        name={'email'}
         error={errors.email}
-        loading={false}
+        loading={isLoginUserLoading}
         register={register}
       />
 
       {/*------------------- Password field --------------  */}
 
       <InputField
-        label={"Password"}
+        label={'Password'}
         placeholder="Password"
-        type={"password"}
-        name={"password"}
+        type={'password'}
+        name={'password'}
         error={errors.password}
-        loading={false}
+        loading={isLoginUserLoading}
         register={register}
       />
 
-      <CustomButton
-        fullWidth={true}
-        type="submit"
-        active={true}
-        isLoading={false}
-      >
+      <CustomButton fullWidth={true} type="submit" active={true} loading={isLoginUserLoading}>
         Log In
       </CustomButton>
     </form>

@@ -14,8 +14,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-
-
 const ProfileDetailsForm = ({ setOpenForm, additionalDetails }) => {
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
 

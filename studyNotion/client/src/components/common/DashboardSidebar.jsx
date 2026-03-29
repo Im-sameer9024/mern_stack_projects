@@ -30,9 +30,7 @@ const DashboardSidebar = () => {
           <div className="text-white p-4 text-center">Loading...</div>
         ) : (
           <>
-          <Badge className=" capitalize mb-2 bg-yellow-900 text-yellow-400">
-            {role}
-          </Badge>
+            <Badge className=" capitalize mb-2 bg-yellow-900 text-yellow-400">{role}</Badge>
             {sidebarLinks.map((link) => {
               if (link.type && link.type !== role) return null;
 

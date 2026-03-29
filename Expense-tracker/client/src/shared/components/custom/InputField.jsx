@@ -1,30 +1,28 @@
 // src/shared/components/common/InputField.jsx
 
-import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "../ui/input";
+import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Input } from '../ui/input';
 
 const InputField = ({
-  type = "text",
+  type = 'text',
   label,
   name,
   error,
   loading,
   register,
   placeholder,
-  className = "",
+  className = '',
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const isPassword = type === "password";
+  const isPassword = type === 'password';
 
   return (
     <div className="flex flex-col gap-1 w-full">
       {/* Label */}
-      {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-      )}
+      {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
 
       {/* Input Wrapper */}
       <div className="relative">
@@ -32,7 +30,7 @@ const InputField = ({
           id={name}
           disabled={loading}
           placeholder={placeholder}
-          type={isPassword && showPassword ? "text" : type}
+          type={isPassword && showPassword ? 'text' : type}
           {...(register && register(name))}
           className={` bg-blue-50 outline-none focus:ring-blue-100! text-black/70 font-content placeholder:text-black/30 border-none  ${className}`}
           {...props}

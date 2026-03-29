@@ -2,7 +2,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Star, Users, BookOpen } from 'lucide-react';
 
-
 const formatPrice = (price) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',

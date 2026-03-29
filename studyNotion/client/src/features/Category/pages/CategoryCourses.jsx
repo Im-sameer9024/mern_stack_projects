@@ -5,30 +5,22 @@ import { useGetCategoryDetails } from '../hooks/useCategory';
 import CategoryHero from '../components/Categoryhero';
 import HorizontalScrollSection from '../components/Horizontalscrollsection';
 
-
-
 const CategoryCourses = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
 
-  const {
-    data: CategoryCoursesData,
-    isPending,
-    error,
-  } = useGetCategoryDetails(categoryId);
+  const { data: CategoryCoursesData, isPending, error } = useGetCategoryDetails(categoryId);
 
   // ── Parse API response ────────────────────────────────────────────────────
-  
-  const payload             = CategoryCoursesData?.data ?? {};
-  const selectedCategory    = payload.selectedCategory ?? null;
-  const selectedCourses     = selectedCategory?.courses ?? [];
-  const topSellingCourses   = payload.topSellingCourses ?? [];
+
+  const payload = CategoryCoursesData?.data ?? {};
+  const selectedCategory = payload.selectedCategory ?? null;
+  const selectedCourses = selectedCategory?.courses ?? [];
+  const topSellingCourses = payload.topSellingCourses ?? [];
   const differentCategories = payload.differentCategories ?? [];
 
   const hasAnyCourse =
-    selectedCourses.length > 0 ||
-    topSellingCourses.length > 0 ||
-    differentCategories.length > 0;
+    selectedCourses.length > 0 || topSellingCourses.length > 0 || differentCategories.length > 0;
 
   // ── Error state ───────────────────────────────────────────────────────────
   if (error) {
@@ -44,7 +36,6 @@ const CategoryCourses = () => {
 
   return (
     <div className="min-h-screen bg-richBlack-900 text-white">
-
       {/*------------------ Hero-------------------------- */}
       {isPending ? (
         // Hero skeleton
@@ -70,8 +61,7 @@ const CategoryCourses = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-14">
-
-         {/*------------------- Selected category courses----------------------- */}
+        {/*------------------- Selected category courses----------------------- */}
         <HorizontalScrollSection
           title={`Courses in ${selectedCategory?.name ?? 'this category'}`}
           subtitle={`${selectedCourses.length} courses to explore`}
@@ -110,7 +100,7 @@ const CategoryCourses = () => {
             ) : (
               <div className="space-y-10">
                 {differentCategories.map((cat) => {
-                  const catName    = cat?.name ?? 'More Courses';
+                  const catName = cat?.name ?? 'More Courses';
                   const catCourses = cat?.courses ?? (Array.isArray(cat) ? cat : [cat]);
 
                   return (

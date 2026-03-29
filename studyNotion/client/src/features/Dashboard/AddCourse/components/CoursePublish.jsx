@@ -22,10 +22,7 @@ const CoursePublish = () => {
   const handleSave = () => {
     if (!courseId || isPending) return;
     setIsPending(true);
-    UpdateCourseStatus(
-      { courseId, status },
-      { onSettled: () => setIsPending(false) }
-    );
+    UpdateCourseStatus({ courseId, status }, { onSettled: () => setIsPending(false) });
   };
 
   const isDraft = status === 'draft';

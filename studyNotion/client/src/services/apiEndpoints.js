@@ -50,8 +50,9 @@ export const cartApiUrls = {
   ADD_TO_CART: '/course/add-to-cart',
   GET_CART_DETAILS: '/course/get-cart',
   REMOVE_CART_ITEM: '/course/remove-from-cart',
-  CREATE_ORDER:"/payment/capture",
-  ORDER_VERIFY:"/payment/verify"
+  CREATE_ORDER: '/payment/capture',
+  ORDER_VERIFY: '/payment/verify',
+  SEND_PAYMENT_SUCCESS_EMAIL: '/payment/success-email',
 };
 
 export const sectionApiUrls = {

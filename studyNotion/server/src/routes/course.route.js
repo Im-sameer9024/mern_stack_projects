@@ -54,7 +54,7 @@ route.delete('/course/delete-course', auth, isTeacher, DeleteCourse);
 route.get('/course/get-all-courses', GetAllCourses);
 route.get('/course/get-course-details/:courseId', GetCourseDetails);
 route.get('/course/get-courses-by-instructor', auth, isTeacher, GetAllCoursesByInstructor);
-route.put('/course/update-course-status',auth,isTeacher,UpdateCourseStatus)
+route.put('/course/update-course-status', auth, isTeacher, UpdateCourseStatus);
 //*******************************************************************//
 //                          SECTION ROUTES
 //*******************************************************************//

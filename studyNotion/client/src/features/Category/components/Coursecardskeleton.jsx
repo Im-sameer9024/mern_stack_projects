@@ -1,5 +1,3 @@
-
-
 const CourseCardSkeleton = ({ count = 4, width = 'w-64' }) =>
   Array.from({ length: count }).map((_, i) => (
     <div

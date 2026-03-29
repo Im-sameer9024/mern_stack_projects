@@ -1,4 +1,4 @@
-import ApiError from "../utils/ApiError.js";
+import ApiError from '../shared/utils/apiError.js';
 
 export const validate = (schema) => (req, res, next) => {
   try {
@@ -6,7 +6,7 @@ export const validate = (schema) => (req, res, next) => {
     req.validatedData = parsedData;
     next();
   } catch (error) {
-    console.log("Error in validate middleware", error);
+    console.log('Error in validate middleware', error);
     return ApiError(res, 400, null, error.message, error);
   }
 };

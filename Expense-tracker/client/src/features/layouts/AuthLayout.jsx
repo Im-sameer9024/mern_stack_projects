@@ -1,5 +1,5 @@
-import { HomeAuthImage } from "@/assets/images/images";
-import { Outlet } from "react-router-dom";
+import { HomeAuthImage } from '@/assets/images/images';
+import { Outlet } from 'react-router-dom';
 
 const AuthLayout = () => {
   return (
@@ -9,9 +9,7 @@ const AuthLayout = () => {
         <div className="w-full max-w-md space-y-6">
           {/* Heading */}
           <div className="space-y-2 text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-bold font-heading">
-              Welcome Back 👋
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold font-heading">Welcome Back 👋</h1>
             <p className="text-gray-500 text-sm md:text-base font-content">
               Please enter your details to connect with us.
             </p>
@@ -26,9 +24,7 @@ const AuthLayout = () => {
 
       {/* ------------ Right Side (Image Section) ------------ */}
       <div className="hidden md:flex md:flex-col flex-1 items-center justify-center bg-gray-100">
-        <h2 className="text-2xl md:text-3xl font-bold font-heading mb-2">
-              Expense Tracker ₹
-            </h2>
+        <h2 className="text-2xl md:text-3xl font-bold font-heading mb-2">Expense Tracker ₹</h2>
         <img
           src={HomeAuthImage}
           alt="auth visual"

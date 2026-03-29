@@ -161,7 +161,7 @@ const Navbar = () => {
                   {isPending ? (
                     <Spinner className="size-5" />
                   ) : (
-                      <img src={data.data?.avatar} alt="profile" />
+                    <img src={data.data?.avatar} alt="profile" />
                   )}
                 </Link>
               </div>

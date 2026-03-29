@@ -1,7 +1,8 @@
 import { apiConnector } from '@/services/apiConnector';
 import { courseApiUrls, sectionApiUrls, subSectionApiUrls } from '@/services/apiEndpoints';
 
-const { CREATE_COURSE, UPDATE_COURSE, GET_ALL_COURSE, GET_COURSE_DETAILS,UPDATE_COURSE_STATUS } = courseApiUrls;
+const { CREATE_COURSE, UPDATE_COURSE, GET_ALL_COURSE, GET_COURSE_DETAILS, UPDATE_COURSE_STATUS } =
+  courseApiUrls;
 const { CREATE_SECTION, UPDATE_SECTION, DELETE_SECTION, GET_SECTIONS_BY_COURSE } = sectionApiUrls;
 const { CREATE_SUBSECTION, UPDATE_SUBSECTION, DELETE_SUBSECTION } = subSectionApiUrls;
 
@@ -24,12 +25,12 @@ export const courseApiOperations = {
     return response.data;
   },
 
-  UpdateCourseStatus:async(data) =>{
+  UpdateCourseStatus: async (data) => {
     const response = await apiConnector({
       method: 'PUT',
       url: UPDATE_COURSE_STATUS,
       bodyData: data,
-    })
+    });
     return response.data;
   },
   GetAllCourses: async () => {

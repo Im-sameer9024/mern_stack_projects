@@ -1,3 +1,3 @@
-import HomeAuthImage from "./auth.webp";
+import HomeAuthImage from './auth.webp';
 
 export { HomeAuthImage };

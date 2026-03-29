@@ -47,7 +47,7 @@ export const useUpdateCourse = () => {
 };
 
 export const useUpdateCourseStatus = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return useMutation({
     mutationFn: courseApiOperations.UpdateCourseStatus,
 
@@ -55,7 +55,7 @@ export const useUpdateCourseStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['courses', data.data?._id] });
       toast.success(data.message);
-      navigate("/dashboard/my-courses")
+      navigate('/dashboard/my-courses');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

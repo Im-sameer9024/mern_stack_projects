@@ -2,25 +2,102 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import CTAButton from '@/features/Home/components/CTAButton';
 import { useAddToCart } from '@/features/Cart/hooks/useCart';
+import {
+  useCreateOrder,
+  useSendPaymentSuccessEmail,
+  useVerifyPayment,
+} from '@/features/Cart/hooks/usePayment';
+import { useDispatch, useSelector } from 'react-redux';
+import rzpLogo from '@/assets/Logo/rzp_logo.png';
+import { useRazorpay } from 'react-razorpay';
+import { toast } from 'sonner';
+import { setIsPaymentLoading } from '@/features/Cart/cartSlice';
+// import { useNavigate } from 'react-router-dom';
 
 const CoursePurchaseCard = ({ course }) => {
   const { mutate: addToCart, isPending: isAddPending } = useAddToCart();
+
+  // const navigate = useNavigate();
+
+  //---------------------- payment related api hooks ---------------------
+  const { isPaymentLoading } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
+  const { Razorpay, isLoading } = useRazorpay();
+
+  const { mutateAsync: CreateOrder } = useCreateOrder();
+  const { mutateAsync: VerifyPayment } = useVerifyPayment();
+  const { mutateAsync: SendPaymentSuccessEmail } = useSendPaymentSuccessEmail();
 
   //  Add to Cart Handler
   const handleAddToCart = () => {
     if (!course?._id) return;
 
-    addToCart({courseId:course?._id});
+    addToCart({ courseId: course?._id });
   };
 
-
-
   //  Buy Now Handler
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!course?._id) return;
+    dispatch(setIsPaymentLoading(true));
 
-    // You can redirect to checkout OR call checkout API
-    console.log('Buy Now:', course._id);
+    try {
+      if (isLoading || !Razorpay) {
+        toast.error('Razorpay script failed to load');
+        return;
+      }
+
+      // Opening the Razorpay SDK
+
+      //---------- Order create ---------------
+      const orderRes = await CreateOrder({ courses: [course._id] });
+
+      const order = orderRes.data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        currency: order.currency,
+        amount: order.amount,
+        order_id: order.id,
+        name: 'StudyNotion',
+        description: 'Course Purchase',
+        image: rzpLogo,
+        prefill: {
+          name: order.notes?.name,
+          email: order.notes?.email,
+        },
+
+        //------- handle success -------------
+        handler: async function (response) {
+          try {
+            await VerifyPayment(response);
+
+            await SendPaymentSuccessEmail({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              amount: order.amount,
+            });
+            toast.success('Payment Successful 🎉');
+          } catch (error) {
+            toast.error('Verification failed');
+            console.log('error in payment', error);
+          }
+        },
+      };
+
+      const razor = new Razorpay(options);
+
+      razor.open();
+      razor.on('payment.failed', function () {
+        toast.error('Oops! Payment failed');
+      });
+    } catch (error) {
+      console.log('Payment api error ...........', error);
+      toast.error('Payment failed');
+    } finally {
+      dispatch(setIsPaymentLoading(false));
+
+      toast.dismiss();
+    }
   };
 
   return (
@@ -48,13 +125,11 @@ const CoursePurchaseCard = ({ course }) => {
         {/* Buy Now */}
         <Button
           onClick={handleBuyNow}
-          disabled={isAddPending}
+          disabled={isPaymentLoading}
           className="w-full bg-slate-200 text-black hover:bg-slate-300"
         >
-          Buy Now
+          {isPaymentLoading ? 'Loading...' : 'Buy Now'}
         </Button>
-
-        
       </CardContent>
     </Card>
   );

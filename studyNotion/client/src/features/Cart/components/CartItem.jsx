@@ -5,24 +5,40 @@ import { useRemoveFromCart } from '../hooks/useCart';
 import CourseDetailSkeleton from '@/features/Course/components/Coursedetailskeleton';
 
 const CartItem = ({ course }) => {
+  const {
+    mutate: removeItemFromCart,
+    isPending: isRemoving,
+  } = useRemoveFromCart();
 
-  const{mutate: removeItemFromCart,isPending: isRemovingItemFromCart} = useRemoveFromCart()
+  if (!course) return null;
 
-
-  if (isRemovingItemFromCart) return <CourseDetailSkeleton />;
-
+  // 🔄 Loading skeleton while removing
+  if (isRemoving) return <CourseDetailSkeleton />;
 
   return (
     <div className="flex gap-5 py-6 border-b border-richBlack-700">
-      <img src={course.thumbnail} alt="course" className="w-40 h-28 rounded-md object-cover" />
+      {/* Thumbnail */}
+      <img
+        src={course.thumbnail}
+        alt={course.title}
+        className="w-40 h-28 rounded-md object-cover"
+      />
 
+      {/* Details */}
       <div className="flex flex-col flex-1 gap-2">
-        <h3 className="text-lg font-semibold max-w-lg">{course.title}</h3>
+        <h3 className="text-lg font-semibold max-w-lg">
+          {course.title}
+        </h3>
 
-        <p className="text-sm text-richBlack-300">{course.instructor}</p>
+        <p className="text-sm text-richBlack-300">
+          {course.instructor?.firstName || 'Instructor'}
+        </p>
 
+        {/* Rating */}
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-yellow-400">{course.rating}</span>
+          <span className="text-yellow-400">
+            {course.rating || '4.5'}
+          </span>
 
           <div className="flex text-yellow-400">
             {[...Array(5)].map((_, i) => (
@@ -30,19 +46,30 @@ const CartItem = ({ course }) => {
             ))}
           </div>
 
-          <span className="text-richBlack-400">(Review Count)</span>
+          <span className="text-richBlack-400">(Reviews)</span>
         </div>
 
-        <p className="text-xs text-richBlack-400">Total Courses • Lesson • Beginner</p>
+        <p className="text-xs text-richBlack-400">
+          Beginner • Full Course
+        </p>
       </div>
 
+      {/* Right Section */}
       <div className="flex flex-col items-end justify-between">
-        <Button onClick={()=> removeItemFromCart({courseId:course._id})} disabled={isRemovingItemFromCart}  className="flex items-center gap-1 text-red-400 hover:text-red-500">
+        <Button
+          onClick={() =>
+            removeItemFromCart({ courseId: course._id })
+          }
+          disabled={isRemoving}
+          className="flex items-center gap-1 text-red-400 hover:text-red-500"
+        >
           <MdDeleteOutline size={20} />
           Remove
         </Button>
 
-        <p className="text-xl text-yellow-400 font-semibold">Rs. {course.price.toLocaleString()}</p>
+        <p className="text-xl text-yellow-400 font-semibold">
+          Rs. {course.price?.toLocaleString()}
+        </p>
       </div>
     </div>
   );

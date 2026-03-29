@@ -1,5 +1,4 @@
-// import mongoose from 'mongoose';
-// import Course from '../models/course.model.js';
+import mongoose from 'mongoose';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import crypto from 'crypto';
@@ -10,6 +9,7 @@ import Payment from '../models/payment.model.js';
 import { mailSender } from '../utils/mailSender.js';
 import { courseEnrollmentEmail } from '../mail/templates/courseEnrollmentEmail.js';
 import CourseProgress from '../models/courseProgress.model.js';
+import { paymentSuccessEmail } from '../mail/templates/paymentSuccessEmail.js';
 
 // const capturePayment = async (req, res) => {
 //   try {
@@ -136,35 +136,29 @@ import CourseProgress from '../models/courseProgress.model.js';
 // };
 
 //---------------------- order create ------------------------------
+
 const capturePayment = async (req, res) => {
   try {
     const userId = req.user._id;
+    const { courses } = req.body;
 
-    const user = await User.findById(userId).populate('cart');
-
-    if (!user || user.cart.length === 0) {
-      return ApiResponse(res, 400, null, 'Cart is empty');
+    if (!courses || courses.length === 0) {
+      return ApiResponse(res, 400, null, 'Courses are required');
     }
+    const user = await User.findById(userId);
 
-    const courseIds = user.cart.map((course) => course._id.toString());
+    // Remove already enrolled courses
+    const validCourses = courses.filter((id) => !user.courses.some((c) => c.toString() === id));
 
-    console.log('courseIds', courseIds);
-
-    const validCourses = courseIds.filter((id) => !user.courses.some((c) => c.toString() === id));
+    console.log('valid courses', validCourses);
 
     if (validCourses.length === 0) {
       return ApiResponse(res, 400, null, 'Student already enrolled');
     }
 
-    let totalAmount = 0;
+    const courseDetails = await Course.find({ _id: { $in: validCourses } });
 
-    user.cart.forEach((course) => {
-      if (validCourses.some((id) => id.toString() === course._id.toString())) {
-        totalAmount += course.price;
-      }
-    });
-
-    console.log('actual amount', totalAmount);
+    const totalAmount = courseDetails.reduce((acc, c) => acc + c.price, 0);
 
     const options = {
       amount: totalAmount * 100,
@@ -183,6 +177,16 @@ const capturePayment = async (req, res) => {
     try {
       const paymentResponse = await razorpay.orders.create(options);
 
+      // ✅ Save order in DB (IMPORTANT)
+      await Payment.create({
+        userId,
+        courses: validCourses,
+        orderId: paymentResponse.id,
+        amount: totalAmount,
+        currency: options.currency,
+        status: 'created',
+      });
+
       return ApiResponse(res, 200, paymentResponse, 'Payment initiated successfully');
     } catch (error) {
       return ApiResponse(res, 400, null, error.message);
@@ -191,6 +195,8 @@ const capturePayment = async (req, res) => {
     return ApiError(res, 500, null, error.message, error);
   }
 };
+
+//------------------------ verify the payment --------------------------
 
 const verifyPayment = async (req, res) => {
   const session = await mongoose.startSession();
@@ -204,15 +210,6 @@ const verifyPayment = async (req, res) => {
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return ApiResponse(res, 400, null, 'Payment Failed');
     }
-
-    const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
-
-    if (paymentDetails.status !== 'captured') {
-      throw new Error('Payment not captured');
-    }
-
-    const amount = paymentDetails.amount / 100;
-    const currency = paymentDetails.currency;
 
     // 🔐 Signature verify
     const body = razorpay_order_id + '|' + razorpay_payment_id;
@@ -237,71 +234,79 @@ const verifyPayment = async (req, res) => {
       return ApiResponse(res, 200, null, 'Already processed');
     }
 
-    const user = await User.findById(userId).populate('cart').session(session);
+    // 🔥 Fetch order
+    const paymentRecord = await Payment.findOne({
+      orderId: razorpay_order_id,
+      userId,
+    }).session(session);
 
-    if (!user || user.cart.length === 0) {
-      throw new Error('Cart is empty');
+    if (!paymentRecord) {
+      return ApiResponse(res, 404, null, 'Payment not found');
     }
 
-    const courseIds = user.cart.map((c) => c._id.toString());
+    const user = await User.findById(userId).session(session);
 
     // 🔥 Amount validation
-    const expectedAmount = user.cart.reduce((acc, c) => acc + c.price, 0);
+    const courseDetails = await Course.find({
+      _id: { $in: paymentRecord.courses },
+    });
+
+    const expectedAmount = courseDetails.reduce((acc, c) => acc + c.price, 0);
+
+    const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
+
+    if (paymentDetails.status !== 'captured') {
+      throw new Error('Payment not captured');
+    }
+
+    const amount = paymentDetails.amount / 100;
+
     if (amount !== expectedAmount) {
       throw new Error('Amount mismatch');
     }
 
-    // 🔥 Remove duplicates
-    const newCourses = courseIds.filter((id) => !user.courses.some((c) => c.toString() === id));
+    const newCourses = paymentRecord.courses;
 
-    // ✅ Update courses (bulk)
+    // ✅ Enroll user
     await Course.updateMany(
       { _id: { $in: newCourses } },
       { $addToSet: { studentsEnrolled: userId } },
       { session }
     );
 
-    // ✅ Create course progress (bulk)
+    // ✅ Create progress
     const progressDocs = newCourses.map((courseId) => ({
       courseId,
       userId,
       completedVideos: [],
     }));
 
-    const createdProgress = await CourseProgress.insertMany(progressDocs, { session });
+    const createdProgress = await CourseProgress.insertMany(progressDocs, {
+      session,
+    });
 
-    // ✅ Add courses
+    // ✅ Update user
     user.courses.push(...newCourses);
     user.courseProgress.push(...createdProgress.map((p) => p._id));
     user.cart = [];
     await user.save({ session });
 
-    // ✅ Save payment record
-    await Payment.create(
-      [
-        {
-          userId,
-          courses: newCourses,
-          paymentId: razorpay_payment_id,
-          orderId: razorpay_order_id,
-          amount,
-          currency,
-          status: 'success',
-        },
-      ],
-      { session }
-    );
+    // ✅ Update payment
+    paymentRecord.paymentId = razorpay_payment_id;
+    paymentRecord.status = 'success';
+    await paymentRecord.save({ session });
 
     await session.commitTransaction();
     session.endSession();
 
-    const courseNames = user.cart.map((c) => c.title);
-    const actualNames = courseNames.join(',');
+    // ✅ Email
+    const courses = await Course.find({ _id: { $in: newCourses } });
+    const courseNames = courses.map((c) => c.title).join(', ');
 
     await mailSender(
       user.email,
-      `Successfully Enrolled into ${actualNames} courses`,
-      courseEnrollmentEmail(actualNames, `${user.firstName} ${user.lastName}`)
+      `Successfully Enrolled`,
+      courseEnrollmentEmail(courseNames, `${user.firstName} ${user.lastName}`)
     );
 
     return ApiResponse(res, 200, null, 'Payment verified & enrolled');
@@ -313,11 +318,11 @@ const verifyPayment = async (req, res) => {
   }
 };
 
-// Send Payment Success Email
-exports.sendPaymentSuccessEmail = async (req, res) => {
+//---------------------- Send Payment Success Email---------------------------
+const sendPaymentSuccessEmail = async (req, res) => {
   const { orderId, paymentId, amount } = req.body;
 
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   if (!orderId || !paymentId || !amount || !userId) {
     return res.status(400).json({ success: false, message: 'Please provide all the details' });
@@ -336,10 +341,11 @@ exports.sendPaymentSuccessEmail = async (req, res) => {
         paymentId
       )
     );
+    return ApiResponse(res, 200, null, 'Email sent successfully');
   } catch (error) {
     console.log('error in sending mail', error);
     return res.status(400).json({ success: false, message: 'Could not send email' });
   }
 };
 
-export { capturePayment, verifyPayment ,sendPaymentSuccessEmail};
+export { capturePayment, verifyPayment, sendPaymentSuccessEmail };

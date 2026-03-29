@@ -3,12 +3,16 @@ import CartSummary from '../components/CartSummary';
 import { useGetCartDetails } from '../hooks/useCart';
 
 const CartPage = () => {
-  const { data: cartDetails, isPending: isCartPending, error } = useGetCartDetails();
+  const {
+    data: cartDetails,
+    isPending: isCartPending,
+    error,
+  } = useGetCartDetails();
 
-  // ✅ Extract data safely
   const cartItems = cartDetails?.data?.cartItems ?? [];
   const total = cartDetails?.data?.totalPrice ?? 0;
 
+  // 🔄 Loading state
   if (isCartPending) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -17,6 +21,7 @@ const CartPage = () => {
     );
   }
 
+  // ❌ Error state
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-400">
@@ -31,27 +36,32 @@ const CartPage = () => {
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-semibold">My Cart</h1>
 
-        {/* Count */}
-
+        {/* Cart Count */}
         {cartItems.length > 0 && (
           <p className="text-richBlack-400 text-sm md:text-base">
-            {cartItems.length > 0} Courses in Cart
+            {cartItems.length} Courses in Cart
           </p>
         )}
 
         {/* Layout */}
         <div className="flex flex-col lg:flex-row gap-10 mt-6">
-          {/* Course List */}
+          {/* Left - Cart Items */}
           <div className="flex-1 space-y-4">
             {cartItems.length > 0 ? (
-              cartItems.map((course) => <CartItem key={course._id} course={course} />)
+              cartItems.map((course) => (
+                <CartItem key={course._id} course={course} />
+              ))
             ) : (
-              <p className="text-richBlack-400 text-center">Your cart is empty</p>
+              <p className="text-richBlack-400 text-center">
+                Your cart is empty
+              </p>
             )}
           </div>
 
-          {/* Summary */}
-          {cartItems.length > 0 && <CartSummary total={total} />}
+          {/* Right - Summary */}
+          {cartItems.length > 0 && (
+            <CartSummary total={total} cartItems={cartItems} />
+          )}
         </div>
       </div>
     </div>

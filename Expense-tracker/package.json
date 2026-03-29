@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "format": "prettier --write .",
+    "dev": "concurrently -n BACKEND,FRONTEND -c green,blue \"npm run server\" \"npm run client\" "
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1"
+  }
+}

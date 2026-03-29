@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CourseCardSkeleton from './Coursecardskeleton';
 import CourseCard from './Coursecard';
 
-
 const HorizontalScrollSection = ({
   title,
   subtitle,
@@ -33,9 +32,7 @@ const HorizontalScrollSection = ({
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-xl font-bold text-white">{title}</h2>
-          {subtitle && (
-            <p className="text-sm text-richBlack-400 mt-0.5">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-sm text-richBlack-400 mt-0.5">{subtitle}</p>}
         </div>
 
         {/* Scroll arrows — only shown when there are real cards */}

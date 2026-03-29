@@ -4,11 +4,13 @@ import userReducer from '../features/Auth/userSlice';
 import courseReducer from '../features/Dashboard/AddCourse/courseSlice';
 import storageSession from 'redux-persist/lib/storage/session';
 import { persistReducer, persistStore } from 'redux-persist';
+import cartReducer from '../features/Cart/cartSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   course: courseReducer,
+  cart:cartReducer,
 });
 
 const persistConfig = {
