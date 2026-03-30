@@ -1,27 +1,30 @@
-import { LuLayoutDashboard } from 'react-icons/lu';
+import { MdDashboard } from 'react-icons/md';
+import { FaWallet, FaHandHoldingUsd } from 'react-icons/fa';
+import { FiLogOut } from 'react-icons/fi';
 
 export const SidebarLinks = [
   {
     id: 1,
-    icon: <LuLayoutDashboard />,
+    icon: <MdDashboard />,
     text: 'Dashboard',
     link: '/dashboard',
   },
+
   {
     id: 2,
-    icon: <LuLayoutDashboard />,
-    text: 'Expenses',
-    link: '/expenses',
-  },
-  {
-    id: 3,
-    icon: <LuLayoutDashboard />,
+    icon: <FaWallet />,
     text: 'Income',
     link: '/incomes',
   },
   {
+    id: 3,
+    icon: <FaHandHoldingUsd />,
+    text: 'Expenses',
+    link: '/expenses',
+  },
+  {
     id: 4,
-    icon: <LuLayoutDashboard />,
+    icon: <FiLogOut />,
     text: 'Logout',
     link: '/logout',
   },

@@ -11,7 +11,9 @@ const MainLayout = () => {
       {/*------------------ Layout ------------*/}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <SideBar />
+        <div className="hidden sm:block">
+          <SideBar />
+        </div>
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-gray-50 p-4">

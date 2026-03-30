@@ -2,6 +2,7 @@
 import App from '@/App';
 import LoginPage from '@/features/Auth/pages/LoginPage';
 import SignupPage from '@/features/Auth/pages/SignupPage';
+
 import AuthLayout from '@/features/layouts/AuthLayout';
 import MainLayout from '@/features/layouts/MainLayout';
 import Root from '@/features/Root';
@@ -10,7 +11,11 @@ import PrivateRoute from '@/shared/components/common/PrivateRoute';
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 
-const HomePage = lazy(() => import('@/features/Dashboard/index'));
+//-------------------- lazy components ------------------------
+
+const DashboardPage = lazy(() => import('@/features/Dashboard/pages/DashboardPage'));
+const IncomePage = lazy(() => import('@/features/Income/pages/IncomePage'));
+const ExpensePage = lazy(() => import('@/features/Expense/pages/ExpensePage'));
 
 export const router = createBrowserRouter([
   {
@@ -47,7 +52,23 @@ export const router = createBrowserRouter([
             path: '/dashboard',
             element: (
               <PrivateRoute>
-                <HomePage />
+                <DashboardPage />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: '/expenses',
+            element: (
+              <PrivateRoute>
+                <ExpensePage />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: '/incomes',
+            element: (
+              <PrivateRoute>
+                <IncomePage />
               </PrivateRoute>
             ),
           },
