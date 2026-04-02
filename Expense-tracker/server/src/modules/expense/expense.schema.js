@@ -7,9 +7,7 @@ const expenseSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    icon: {
-      type: String,
-    },
+
     category: {
       type: String,
       required: true,
@@ -18,6 +16,7 @@ const expenseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
     date: {
       type: Date,
       default: Date.now,

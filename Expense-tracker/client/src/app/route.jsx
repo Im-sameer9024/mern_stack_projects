@@ -16,6 +16,7 @@ import { createBrowserRouter } from 'react-router-dom';
 const DashboardPage = lazy(() => import('@/features/Dashboard/pages/DashboardPage'));
 const IncomePage = lazy(() => import('@/features/Income/pages/IncomePage'));
 const ExpensePage = lazy(() => import('@/features/Expense/pages/ExpensePage'));
+const TransactionsPage = lazy(() => import('@/features/Transactions/pages/TransactionsPage'));
 
 export const router = createBrowserRouter([
   {
@@ -69,6 +70,14 @@ export const router = createBrowserRouter([
             element: (
               <PrivateRoute>
                 <IncomePage />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: '/transactions',
+            element: (
+              <PrivateRoute>
+                <TransactionsPage />
               </PrivateRoute>
             ),
           },

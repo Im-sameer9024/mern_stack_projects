@@ -3,23 +3,34 @@ import { GenerateExpensePDF } from '../../shared/utils/pdfGenerators.js';
 import Expense from './expense.schema.js';
 import { formatDate } from '../../shared/utils/helpers.js';
 import ApiError from '../../shared/utils/apiError.js';
+import Transaction from '../transaction/transaction.schema.js';
+import { sortTypes, TransactionTypes } from '../../shared/utils/constants.js';
 
 const AddExpense = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { icon, category, amount } = req.body;
+    const { category, amount } = req.body;
 
     const newExpense = await Expense.create({
       userId,
-      icon,
       category,
       amount,
     });
 
-    return ApiResponse(res, 200, newExpense, 'Expense added successfully');
+    //------------- Create transaction ------------
+
+    const newTransaction = await Transaction.create({
+      userId: userId,
+      transactionId: newExpense?._id,
+      transactionType: TransactionTypes.EXPENSE,
+      transactionAmount: amount,
+      source: category,
+    });
+
+    return ApiResponse(res, 200, { newExpense, newTransaction }, 'Expense added successfully');
   } catch (error) {
-    return ApiResponse(res, 500, error, 'Something went wrong');
+    return ApiError(res, 500, null, error.message, error);
   }
 };
 
@@ -28,7 +39,7 @@ const GetAllExpense = async (req, res) => {
     const userId = req.user.id;
 
     // sort = latest | oldest | high | low
-    let { startDate, endDate, page = 1, limit = 10, sort = 'latest', category } = req.query;
+    let { startDate, endDate, page = 1, limit = 10, sort = sortTypes.LATEST, category } = req.query;
 
     page = parseInt(page);
     limit = parseInt(limit);
@@ -58,13 +69,13 @@ const GetAllExpense = async (req, res) => {
     let sortOption = {};
 
     switch (sort) {
-      case 'high':
+      case sortTypes.HIGHEST:
         sortOption.amount = -1;
         break;
-      case 'low':
+      case sortTypes.LOWEST:
         sortOption.amount = 1;
         break;
-      case 'oldest':
+      case sortTypes.OLDEST:
         sortOption.date = 1;
         break;
       default:
@@ -75,15 +86,39 @@ const GetAllExpense = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const [expenses, total] = await Promise.all([
+    const [expenses, total,chartData] = await Promise.all([
       Expense.find(filter).sort(sortOption).skip(skip).limit(limit),
       Expense.countDocuments(filter),
+      Expense.aggregate([
+              {
+                $group:{
+                  _id:{
+                    month:{
+                      $month:"$createdAt"
+                    },
+                    year:{
+                      $year:"$createdAt"
+                    }
+                  },
+                  totalAmount:{
+                    $sum:"$amount"
+                  }
+                }
+              },
+              {
+                $sort:{
+                  "_id.year":1,
+                  "_id.month":1
+                }
+              }
+            ])
     ]);
 
     return ApiResponse(
       res,
       200,
       {
+        chartData,
         expenses,
         pagination: {
           total,
@@ -102,11 +137,23 @@ const GetAllExpense = async (req, res) => {
 const DeleteExpense = async (req, res) => {
   try {
     const { expenseId } = req.body;
-    const deletedExpense = await Expense.findByIdAndDelete(expenseId);
 
-    return ApiResponse(res, 200, deletedExpense, 'Expense deleted successfully');
+    const [deletedExpense, deletedTransaction] = await Promise.all([
+      Expense.findByIdAndDelete(expenseId),
+      Transaction.findOneAndDelete({
+        transactionId: expenseId,
+        transactionType: TransactionTypes.EXPENSE,
+      }),
+    ]);
+
+    return ApiResponse(
+      res,
+      200,
+      { deletedExpense, deletedTransaction },
+      'Expense deleted successfully'
+    );
   } catch (error) {
-    return ApiResponse(res, 500, error, 'Something went wrong');
+    return ApiError(res, 500, null, error.message, error);
   }
 };
 

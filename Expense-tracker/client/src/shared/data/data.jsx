@@ -1,31 +1,32 @@
-import { MdDashboard } from 'react-icons/md';
-import { FaWallet, FaHandHoldingUsd } from 'react-icons/fa';
-import { FiLogOut } from 'react-icons/fi';
+
+import { HandCoins, LayoutDashboard, LogOut, WalletMinimal } from 'lucide-react';
+
 
 export const SidebarLinks = [
   {
     id: 1,
-    icon: <MdDashboard />,
+    icon: <LayoutDashboard/>,
     text: 'Dashboard',
     link: '/dashboard',
   },
 
   {
     id: 2,
-    icon: <FaWallet />,
+    icon: <WalletMinimal/> ,
     text: 'Income',
     link: '/incomes',
   },
   {
     id: 3,
-    icon: <FaHandHoldingUsd />,
+    icon: <HandCoins/> ,
     text: 'Expenses',
     link: '/expenses',
   },
   {
     id: 4,
-    icon: <FiLogOut />,
+    icon: <LogOut/>,
     text: 'Logout',
     link: '/logout',
   },
 ];
+

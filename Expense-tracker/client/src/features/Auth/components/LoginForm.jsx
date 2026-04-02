@@ -10,7 +10,7 @@ const LoginForm = () => {
   const { mutateAsync: LoginUser, isPending: isLoginUserLoading } = useLoginUser();
 
   const {
-    register,
+    control,
     formState: { errors },
     handleSubmit,
   } = useForm({
@@ -35,7 +35,7 @@ const LoginForm = () => {
         name={'email'}
         error={errors.email}
         loading={isLoginUserLoading}
-        register={register}
+        control={control}
       />
 
       {/*------------------- Password field --------------  */}
@@ -47,7 +47,7 @@ const LoginForm = () => {
         name={'password'}
         error={errors.password}
         loading={isLoginUserLoading}
-        register={register}
+        control={control}
       />
 
       <CustomButton fullWidth={true} type="submit" active={true} loading={isLoginUserLoading}>

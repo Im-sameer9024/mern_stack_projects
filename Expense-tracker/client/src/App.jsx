@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import GlobalLoader from './shared/components/custom/GlobalSpinner';
-import { Spinner } from './shared/components/ui/spinner';
 import CustomSpinner from './shared/components/custom/CustomSpinner';
+import AuthChecker from './shared/utils/AuthChecker';
 
 const App = () => {
   return (
     <>
-      <GlobalLoader />
+      <AuthChecker />
+
       <Suspense fallback={<CustomSpinner />}>
         <Outlet />
       </Suspense>

@@ -10,7 +10,6 @@ import AuthChecker from '@/shared/utils/AuthChecker';
 const GlobalProvider = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthChecker />
       <Toaster richColors position="top-right" closeButton duration={3000} />
       <RouterProvider router={router} />
       <ReactQueryDevtools initialIsOpen={false} position="bottom" />

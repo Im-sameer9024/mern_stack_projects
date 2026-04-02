@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  GetUserDetails,
   LogIn,
   LogOut,
   RefreshAccessToken,
@@ -17,6 +18,7 @@ route.post('/signup', SignUp);
 route.post('/login', LogIn);
 route.get('/refresh-token', RefreshAccessToken);
 route.get('/logout', auth, LogOut);
+route.get('/user-details', auth, GetUserDetails);
 
 //---------------- password reset--------------
 

@@ -1,5 +1,4 @@
 import { useAuthStore } from '@/app/store/authStore';
-import { useLoaderStore } from '@/app/store/loaderStore';
 import { AuthApiOperations } from '@/features/Auth/authApiOperations';
 import axios from 'axios';
 
@@ -26,28 +25,6 @@ const MAX_QUEUE_SIZE = 20;
 let isRefreshing = false;
 let failedQueue = [];
 
-//--------------- global manage the laoding state ---------------
-
-let requestCount = 0;
-let timeout;
-const startLoading = () => {
-  requestCount++;
-  clearTimeout(timeout);
-
-  timeout = setTimeout(() => {
-    useLoaderStore.getState().setLoading(true);
-  }, 200);
-};
-
-const stopLoading = () => {
-  requestCount = Math.max(requestCount - 1, 0);
-
-  if (requestCount === 0) {
-    clearTimeout(timeout);
-    useLoaderStore.getState().setLoading(false);
-  }
-};
-
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -64,10 +41,6 @@ const processQueue = (error, token = null) => {
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    //------------- loading start ------------
-    if (!config.__skipLoader) {
-      startLoading();
-    }
     const token = useAuthStore.getState().token;
     if (token) {
       config.headers = config.headers || {};
@@ -83,16 +56,12 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    //-------- stop loading ------------
-    stopLoading();
     return response;
   },
   async (error) => {
-    //---------- stop loading --------------
-    stopLoading();
-
     const originalRequest = error?.config;
     const setToken = useAuthStore.getState().setToken;
+    const clearToken = useAuthStore.getState().clearToken;
 
     if (!originalRequest) {
       return Promise.reject(error);
@@ -104,6 +73,7 @@ axiosInstance.interceptors.response.use(
       (status === 401 || status === 403) &&
       !originalRequest.__isRetryRequest &&
       !originalRequest.url?.includes('/user/refresh-token') &&
+      !originalRequest.url?.includes('/user/logout') &&
       !originalRequest.__skipAuthRefresh
     ) {
       //---------------------if already refreshing token -----------------
@@ -151,11 +121,10 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
 
-        requestCount = 0;
         //-------- logout flow ---------------
         await AuthApiOperations.LogoutUser();
-        setToken(null);
-
+        clearToken();
+        localStorage.clear();
         // redirect user
         window.location.href = '/login';
 

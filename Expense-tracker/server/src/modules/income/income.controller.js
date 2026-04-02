@@ -1,22 +1,58 @@
 import ApiError from '../../shared/utils/apiError.js';
 import ApiResponse from '../../shared/utils/apiResponse.js';
+import { sortTypes, TransactionTypes } from '../../shared/utils/constants.js';
 import { formatDate } from '../../shared/utils/helpers.js';
 import { GenerateIncomePDF } from '../../shared/utils/pdfGenerators.js';
+import Transaction from '../transaction/transaction.schema.js';
 import Income from './income.schema.js';
 
 const AddIncome = async (req, res) => {
   try {
     const { id } = req.user;
-    const { icon, source, amount } = req.body;
+    const { source, amount, date } = req.body;
 
     const newIncome = await Income.create({
       userId: id,
-      icon,
       source,
       amount,
+      date: new Date(date),
     });
 
-    return ApiResponse(res, 201, newIncome, 'Income added successfully');
+    //------------- Create transaction ------------
+
+    const newTransaction = await Transaction.create({
+      userId: id,
+      transactionId: newIncome?._id,
+      transactionType: TransactionTypes.INCOME,
+      transactionAmount: amount,
+      source: source,
+    });
+
+    return ApiResponse(res, 201, { newIncome, newTransaction }, 'Income added successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
+const EditIncome = async (req, res) => {
+  try {
+    const { incomeId, amount, date, source } = req.body;
+
+    if (!incomeId) {
+      return ApiResponse(res, 400, null, 'Income id is required');
+    }
+
+    const updatedIncome = await Income.findByIdAndUpdate(
+      incomeId,
+      {
+        amount,
+        date: new Date(date),
+        source,
+      },
+      { new: true }
+    );
+
+    return ApiResponse(res, 200, updatedIncome, 'Income updated successfully');
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }
@@ -27,7 +63,7 @@ const GetAllIncome = async (req, res) => {
     const { id } = req.user;
 
     // sort = latest | oldest | highest | lowest
-    let { startDate, endDate, page = 1, limit = 10, sort = 'latest', source } = req.query;
+    let { startDate, endDate, page = 1, limit = 10, sort = sortTypes.LATEST, source } = req.query;
 
     page = parseInt(page);
     limit = parseInt(limit);
@@ -57,13 +93,13 @@ const GetAllIncome = async (req, res) => {
     let sortOption = {};
 
     switch (sort) {
-      case 'high':
+      case sortTypes.HIGHEST:
         sortOption.amount = -1;
         break;
-      case 'low':
+      case sortTypes.LOWEST:
         sortOption.amount = 1;
         break;
-      case 'oldest':
+      case sortTypes.OLDEST:
         sortOption.date = 1;
         break;
       default:
@@ -76,9 +112,32 @@ const GetAllIncome = async (req, res) => {
 
     //----- parallel queries ---------
 
-    const [incomes, total] = await Promise.all([
+    const [incomes, total, chartData] = await Promise.all([
       Income.find(filter).sort(sortOption).skip(skip).limit(limit),
       Income.countDocuments(filter),
+      Income.aggregate([
+        {
+          $group: {
+            _id: {
+              month: {
+                $month: '$createdAt',
+              },
+              year: {
+                $year: '$createdAt',
+              },
+            },
+            totalAmount: {
+              $sum: '$amount',
+            },
+          },
+        },
+        {
+          $sort: {
+            '_id.year': 1,
+            '_id.month': 1,
+          },
+        },
+      ]),
     ]);
 
     return ApiResponse(
@@ -92,9 +151,30 @@ const GetAllIncome = async (req, res) => {
           limit,
           totalPages: Math.ceil(total / limit),
         },
+        chartData,
       },
       'All incomes fetched successfully'
     );
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
+const GetSingleIncome = async (req, res) => {
+  try {
+    const { incomeId } = req.params;
+
+    if (!incomeId) {
+      return ApiResponse(res, 400, null, 'IncomeId is required');
+    }
+
+    const income = await Income.findById(incomeId);
+
+    if (!income) {
+      return ApiResponse(res, 404, null, 'Income not found');
+    }
+
+    return ApiResponse(res, 200, income, 'Income fetched successfully');
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }
@@ -104,9 +184,35 @@ const DeleteIncome = async (req, res) => {
   try {
     const { incomeId } = req.body;
 
-    const deletedIncome = await Income.findByIdAndDelete(incomeId);
+    const [deletedIncome, deletedTransaction] = await Promise.all([
+      Income.findByIdAndDelete(incomeId),
+      Transaction.findOneAndDelete({
+        transactionId: incomeId,
+        transactionType: TransactionTypes.INCOME,
+      }),
+    ]);
 
-    return ApiResponse(res, 200, deletedIncome, 'Income deleted successfully');
+    return ApiResponse(
+      res,
+      200,
+      { deletedIncome, deletedTransaction },
+      'Income deleted successfully'
+    );
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
+const DeleteAllIncome = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await Promise.all([
+      Income.deleteMany({ userId: userId }),
+      Transaction.deleteMany({ userId: userId, transactionType: TransactionTypes.INCOME }),
+    ]);
+
+    return ApiResponse(res, 200, null, 'All incomes deleted successfully');
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }
@@ -159,4 +265,4 @@ const DownloadIncome = async (req, res) => {
   }
 };
 
-export { AddIncome, GetAllIncome, DeleteIncome, DownloadIncome };
+export { AddIncome, GetAllIncome, DeleteIncome, DownloadIncome, DeleteAllIncome, EditIncome,GetSingleIncome };

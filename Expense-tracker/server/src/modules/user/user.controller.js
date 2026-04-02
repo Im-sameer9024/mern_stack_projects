@@ -1,4 +1,3 @@
-import { registerEmailTemplate } from '../../shared/mail-templates/registerEmailTemplate.js';
 import ApiError from '../../shared/utils/apiError.js';
 import ApiResponse from '../../shared/utils/apiResponse.js';
 import { cookieOptions } from '../../shared/utils/constants.js';
@@ -10,7 +9,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { resetPasswordEmailTemplate } from '../../shared/mail-templates/resetPasswordEmailTemplate .js';
 import { passwordResetSuccessTemplate } from '../../shared/mail-templates/passwordResetSuccessTemplate .js';
-
+import {registerEmailTemplate} from '../../shared/mail-templates/registerEmailTemplate.js'
 const SignUp = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -56,6 +55,7 @@ const LogIn = async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    const randomByte = crypto.randomBytes(16).toString('hex');
 
     const payload = {
       id: user._id,
@@ -71,7 +71,12 @@ const LogIn = async (req, res) => {
 
       await user.save();
 
-      return ApiResponse(res, 201, { createdUser, accessToken }, 'User Logged In Successfully');
+      return ApiResponse(
+        res,
+        201,
+        { createdUser, accessToken, randomByte },
+        'User Logged In Successfully'
+      );
     } else {
       return ApiResponse(res, 403, null, 'Invalid password');
     }
@@ -132,8 +137,8 @@ const LogOut = async (req, res) => {
     // clear cookie ALWAYS
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: false,
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     });
 
     return ApiResponse(res, 200, null, 'Logged out successfully');
@@ -214,4 +219,28 @@ const ResetPassword = async (req, res) => {
   } catch (error) {}
 };
 
-export { SignUp, LogIn, RefreshAccessToken, LogOut, ResetPasswordToken, ResetPassword };
+const GetUserDetails = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select('_id name email');
+
+    if (!user) {
+      return ApiResponse(res, 400, null, 'User not Registered');
+    }
+
+    ApiResponse(res, 201, user, 'User Details Fetched Successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
+export {
+  SignUp,
+  LogIn,
+  RefreshAccessToken,
+  LogOut,
+  ResetPasswordToken,
+  GetUserDetails,
+  ResetPassword,
+};

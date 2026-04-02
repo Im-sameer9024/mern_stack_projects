@@ -2,23 +2,22 @@ import { useAuthStore } from '@/app/store/authStore';
 import { AuthApiOperations } from '@/features/Auth/authApiOperations';
 import { axiosInstance } from '@/services/apiConnector';
 import React, { useEffect } from 'react';
-import queryClient from './reactQuery';
 import { toast } from 'sonner';
+import queryClient from './reactQuery';
 
 const AuthChecker = () => {
   //-------------- zustand store ------------
   const setToken = useAuthStore((state) => state.setToken);
+  const handleAutoLogout = () => {
+    const { clearToken } = useAuthStore.getState();
 
-  const handleClientLogout = () => {
-    const { setToken } = useAuthStore.getState();
+    // clear auth
+    clearToken();
 
-    // clear auth state
-    setToken(null);
-
-    // clear cache
+    // clear queries
     queryClient.clear();
 
-    // optional: clear localStorage/sessionStorage
+    // clear storage
     localStorage.clear();
   };
 
@@ -37,7 +36,7 @@ const AuthChecker = () => {
         }
       } catch (error) {
         if (error?.response?.status === 401) {
-          handleClientLogout();
+          handleAutoLogout();
         } else {
           toast.error(error.response?.data?.message || 'Something went wrong');
         }

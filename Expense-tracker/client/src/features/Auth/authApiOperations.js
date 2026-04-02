@@ -1,7 +1,7 @@
 import { apiConnector } from '@/services/apiConnector';
 import { userApiUrls } from '@/services/apiEndpoints';
 
-const { SIGNUP_USER, LOGIN_USER, REFRESH_TOKEN, LOGOUT_USER } = userApiUrls;
+const { SIGNUP_USER, LOGIN_USER, REFRESH_TOKEN, LOGOUT_USER, GET_USER_DETAILS } = userApiUrls;
 
 export const AuthApiOperations = {
   //------------------ user register --------------
@@ -41,6 +41,16 @@ export const AuthApiOperations = {
     const response = await apiConnector({
       method: 'GET',
       url: LOGOUT_USER,
+    });
+    return response.data;
+  },
+
+  //-------------------- user Details ------------------
+
+  GetUserDetails: async () => {
+    const response = await apiConnector({
+      method: 'GET',
+      url: GET_USER_DETAILS,
     });
     return response.data;
   },

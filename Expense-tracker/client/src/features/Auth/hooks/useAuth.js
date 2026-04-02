@@ -1,9 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
-import { AuthApiOperations } from '../authApiOperations';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { GetApiErrorMessage, GetApiResponseMessage } from '@/shared/utils/apiMessage';
 import { useAuthStore } from '@/app/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import queryClient from '@/shared/utils/reactQuery';
+import { AuthApiOperations } from '../authApiOperations';
 
 export const useLoginUser = () => {
   //------------- zustand store----------
@@ -14,6 +15,7 @@ export const useLoginUser = () => {
     mutationFn: AuthApiOperations.LoginUser,
     onSuccess: (data) => {
       authStore.setToken(data?.data?.accessToken);
+      localStorage.setItem('temp', data?.data?.randomByte);
       navigate('/dashboard');
       toast.success(GetApiResponseMessage(data));
     },
@@ -30,6 +32,35 @@ export const useSignupUser = () => {
     onSuccess: (data) => {
       toast.success(GetApiResponseMessage(data));
       navigate('/login');
+    },
+    onError: (error) => {
+      toast.error(GetApiErrorMessage(error));
+    },
+  });
+};
+
+export const useGetUserDetails = () => {
+  const temp = localStorage.getItem('temp');
+  const token = useAuthStore((state) => state.token);
+
+  return useQuery({
+    queryKey: ['userDetails', temp],
+    queryFn: AuthApiOperations.GetUserDetails,
+    enabled: !!token,
+  });
+};
+
+export const useLogoutUser = () => {
+  const navigate = useNavigate();
+  const clearToken = useAuthStore((state) => state.clearToken);
+  return useMutation({
+    mutationFn: AuthApiOperations.LogoutUser,
+    onSuccess: (data) => {
+      toast.success(GetApiResponseMessage(data));
+      navigate('/login');
+      clearToken();
+      queryClient.clear();
+      localStorage.clear();
     },
     onError: (error) => {
       toast.error(GetApiErrorMessage(error));
