@@ -12,46 +12,60 @@ import {
 import CustomSelectField from '@/shared/components/custom/CustomSelectField';
 
 const monthNames = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 const CustomBarChart = ({ apiData = [] }) => {
-  const [year, setYear] = useState(2026);
+  const currentYear = new Date().getFullYear();
 
-  // ✅ Get available years dynamically
-  const availableYears = [
-    ...new Set(apiData.map((item) => item._id.year)),
-  ];
+  // ✅ Ensure apiData is always array
+  const safeData = useMemo(() => {
+    return Array.isArray(apiData) ? apiData : [];
+  }, [apiData]);
+  const [year, setYear] = useState(null);
+
+  // ✅ Extract years safely
+  const availableYears = useMemo(() => {
+    return [...new Set(safeData.map((item) => item?._id?.year))].filter(Boolean);
+  }, [safeData]);
+
+  const selectedYear =
+    year || (availableYears.includes(currentYear) ? currentYear : availableYears[0]);
 
   // ✅ Transform data based on selected year
   const chartData = useMemo(() => {
-    const filtered = apiData.filter(
-      (item) => item._id.year === year
-    );
+    const dataMap = {};
 
-    return monthNames.map((month, index) => {
-      const found = filtered.find(
-        (item) => item._id.month === index + 1
-      );
-
-      return {
-        month,
-        amount: found ? found.totalAmount : 0,
-      };
+    safeData.forEach((item) => {
+      if (item?._id?.year === selectedYear) {
+        dataMap[item._id.month] = item.totalAmount;
+      }
     });
-  }, [apiData, year]);
 
-  const getBarColor = (index) =>
-    index % 2 === 0 ? '#875cf5' : '#cfbefb';
+    return monthNames.map((month, index) => ({
+      month,
+      amount: dataMap[index + 1] || 0,
+    }));
+  }, [safeData, selectedYear]);
+
+  const getBarColor = (index) => (index % 2 === 0 ? '#875cf5' : '#cfbefb');
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload?.length) {
       return (
         <div className="bg-white shadow-md rounded-lg p-2 border border-slate-300">
-          <p className="text-xs font-semibold text-purple-800 mb-1">
-            {payload[0]?.payload?.month}
-          </p>
+          <p className="text-xs font-semibold text-purple-800 mb-1">{payload[0]?.payload?.month}</p>
           <p className="text-sm text-slate-600">
             Amount:{' '}
             <span className="text-sm font-medium text-slate-900">
@@ -66,11 +80,11 @@ const CustomBarChart = ({ apiData = [] }) => {
 
   return (
     <div className="bg-white mt-6 p-4 rounded">
-
       {/* 🔥 Year Filter */}
       <div className="flex justify-end mb-4">
         <CustomSelectField
-          value={year}
+          placeholder="Select year"
+          value={year ?? selectedYear}
           onChange={(val) => setYear(Number(val))}
           options={availableYears.map((y) => ({
             label: String(y),
@@ -84,16 +98,9 @@ const CustomBarChart = ({ apiData = [] }) => {
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
 
-          <XAxis
-            dataKey="month"
-            tick={{ fontSize: 12, fill: '#555' }}
-            stroke="none"
-          />
+          <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#555' }} stroke="none" />
 
-          <YAxis
-            tick={{ fontSize: 12, fill: '#555' }}
-            stroke="none"
-          />
+          <YAxis tick={{ fontSize: 12, fill: '#555' }} stroke="none" />
 
           <Tooltip content={CustomTooltip} />
 

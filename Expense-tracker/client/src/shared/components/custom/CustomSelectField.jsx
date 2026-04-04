@@ -12,7 +12,7 @@ import {
 const CustomSelectField = ({
   label,
   options = [],
-//   name,
+  //   name,
   error,
   loading,
   placeholder = 'Select an option',
@@ -21,18 +21,13 @@ const CustomSelectField = ({
   onChange,
   //   register, // optional (react-hook-form alternative)
 }) => {
-
   return (
     <div className="flex flex-col gap-1 w-full">
       {/* Label */}
       {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
 
       {/* Select */}
-      <Select
-        disabled={loading}
-        value={value}
-        onValueChange={onChange}
-      >
+      <Select disabled={loading} value={value} onValueChange={onChange}>
         <SelectTrigger
           className={`bg-blue-50 outline-none focus:ring-blue-100! text-black/70 font-content border-none ${className}`}
         >

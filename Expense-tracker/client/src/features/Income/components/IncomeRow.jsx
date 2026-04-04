@@ -1,12 +1,13 @@
 import CustomButton from '@/shared/components/custom/CustomButton';
-import Modal from '@/shared/components/custom/Modal';
 import { formatDate } from '@/shared/utils/helpers';
 import { PencilLine, Trash } from 'lucide-react';
-import React, { memo, useEffect, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import { LuTrendingUp } from 'react-icons/lu';
 import UpdateIncomeForm from './UpdateIncomeForm';
 import { useDeleteIncome, useGetSingleIncome, useUpdateIncome } from '../hooks/useIncomes';
 import { useForm } from 'react-hook-form';
+
+const Modal = lazy(() => import('@/shared/components/custom/Modal'));
 
 const IncomeRow = ({ rowData, path }) => {
   const [incomeId, setIncomeId] = useState(null);
@@ -80,7 +81,7 @@ const IncomeRow = ({ rowData, path }) => {
       reset({
         source: IncomeActualData?.source || '',
         amount: IncomeActualData?.amount || '',
-        date: formatDateForInput(IncomeActualData?.date),
+        date: formatDateForInput(IncomeActualData?.date) || '',
       });
     }
   }, [IncomeActualData, reset]);
@@ -142,6 +143,8 @@ const IncomeRow = ({ rowData, path }) => {
           </div>
         </div>
       </div>
+
+      {/*------------------- Update Income form ------------------ */}
       <Modal
         isVisible={showUpdateIncomeForm}
         content={
@@ -162,6 +165,8 @@ const IncomeRow = ({ rowData, path }) => {
         onClose={CloseUpdateForm}
         width={'50%'}
       />
+
+      {/*-------------------- Delete Income confirmation modal ------------------ */}
 
       <Modal
         isVisible={showDeleteIncomeModal}
@@ -185,4 +190,4 @@ const IncomeRow = ({ rowData, path }) => {
   );
 };
 
-export default memo(IncomeRow);
+export default IncomeRow;

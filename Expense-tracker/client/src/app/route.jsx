@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import App from '@/App';
+import ForgotPasswordPage from '@/features/Auth/pages/ForgotPasswordPage';
 import LoginPage from '@/features/Auth/pages/LoginPage';
+import ResetPasswordPage from '@/features/Auth/pages/ResetPasswordPage';
 import SignupPage from '@/features/Auth/pages/SignupPage';
 
 import AuthLayout from '@/features/layouts/AuthLayout';
@@ -39,6 +41,22 @@ export const router = createBrowserRouter([
             element: (
               <OpenRoute>
                 <SignupPage />
+              </OpenRoute>
+            ),
+          },
+          {
+            path: '/forgot-password',
+            element: (
+              <OpenRoute>
+                <ForgotPasswordPage />
+              </OpenRoute>
+            ),
+          },
+          {
+            path: '/reset-password-token/:token',
+            element: (
+              <OpenRoute>
+                <ResetPasswordPage />
               </OpenRoute>
             ),
           },

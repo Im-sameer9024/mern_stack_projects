@@ -54,4 +54,24 @@ export const AuthApiOperations = {
     });
     return response.data;
   },
+
+  //---------------------- user password token ----------------------
+
+  ResetPasswordLink: async (data) => {
+    const response = await apiConnector({
+      method: 'POST',
+      url: userApiUrls.FORGOT_PASSWORD_LINK,
+      bodyData: data,
+    });
+    return response.data;
+  },
+
+  ResetPassword: async (data) => {
+    const response = await apiConnector({
+      method: 'POST',
+      url: userApiUrls.FORGOT_PASSWORD,
+      bodyData: data,
+    });
+    return response.data;
+  },
 };

@@ -4,6 +4,7 @@ import { sortTypes } from '../../shared/utils/constants.js';
 import Expense from '../expense/expense.schema.js';
 import Income from '../income/income.schema.js';
 import Transaction from './transaction.schema.js';
+import mongoose from 'mongoose';
 
 export const GetAllTransactions = async (req, res) => {
   try {
@@ -47,8 +48,13 @@ export const GetAllTransactions = async (req, res) => {
       Transaction.countDocuments(filter),
       Transaction.aggregate([
         {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId), // 👈 filter by logged-in user
+          },
+        },
+        {
           $group: {
-            _id: null,
+            _id: '$userId',
             totalIncome: {
               $sum: {
                 $cond: [{ $eq: ['$transactionType', 'income'] }, '$transactionAmount', 0],
@@ -71,6 +77,10 @@ export const GetAllTransactions = async (req, res) => {
         {
           $project: {
             _id: 0,
+            userId: '$_id', // 👈 rename for clarity
+            totalIncome: 1,
+            totalExpense: 1,
+            totalBalance: 1,
           },
         },
       ]),

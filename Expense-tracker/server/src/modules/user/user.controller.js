@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { resetPasswordEmailTemplate } from '../../shared/mail-templates/resetPasswordEmailTemplate .js';
 import { passwordResetSuccessTemplate } from '../../shared/mail-templates/passwordResetSuccessTemplate .js';
-import {registerEmailTemplate} from '../../shared/mail-templates/registerEmailTemplate.js'
+import { registerEmailTemplate } from '../../shared/mail-templates/registerEmailTemplate.js';
 const SignUp = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -78,7 +78,7 @@ const LogIn = async (req, res) => {
         'User Logged In Successfully'
       );
     } else {
-      return ApiResponse(res, 403, null, 'Invalid password');
+      return ApiResponse(res, 400, null, 'Invalid password');
     }
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
@@ -180,7 +180,11 @@ const ResetPasswordToken = async (req, res) => {
 
 const ResetPassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword, confirmPassword, token } = req.body;
+    const { newPassword, confirmPassword, token } = req.body;
+
+    if (newPassword !== confirmPassword) {
+      return ApiResponse(res, 400, null, 'New Password and Confirm Password do not match');
+    }
 
     const user = await User.findOne({
       resetPasswordToken: token,
@@ -189,16 +193,6 @@ const ResetPassword = async (req, res) => {
 
     if (!user) {
       return ApiResponse(res, 400, null, 'Token has Expired');
-    }
-
-    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
-
-    if (!isPasswordMatch) {
-      return ApiResponse(res, 400, null, 'Old Password is Incorrect');
-    }
-
-    if (newPassword !== confirmPassword) {
-      return ApiResponse(res, 400, null, 'New Password and Confirm Password do not match');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -214,7 +208,7 @@ const ResetPassword = async (req, res) => {
     await mailSender(
       user.email,
       'Password Reset Successfully',
-      passwordResetSuccessTemplate(user.name)
+      passwordResetSuccessTemplate(user.name, `${process.env.CLIENT_URL}/login}`)
     );
   } catch (error) {}
 };

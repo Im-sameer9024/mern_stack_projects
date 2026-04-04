@@ -7,9 +7,12 @@ export const useAuthStore = create(
       //------------------- initial states --------------------------
       token: null,
       tokenLoading: true,
+      forgotPasswordToken: null,
 
       //---------------- helper functions--------------------
       setToken: (token) => set({ token: token, tokenLoading: false }, false, 'auth/setToken'),
+      setPasswordToken: (token) =>
+        set({ forgotPasswordToken: token }, false, 'auth/setPasswordToken'),
 
       clearToken: () => set({ token: null, tokenLoading: false }, false, 'auth/clearToken'),
     }),

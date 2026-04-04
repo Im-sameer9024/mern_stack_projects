@@ -4,10 +4,8 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 const FinancialChartSkeleton = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center gap-6 py-4">
-      
       {/* 🔵 Donut Chart */}
       <div className="relative flex items-center justify-center">
-        
         {/* Outer Circle */}
         <Skeleton className="w-55 h-55 rounded-full" />
 

@@ -5,7 +5,6 @@ import { router } from '../route';
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from '@/shared/utils/reactQuery';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import AuthChecker from '@/shared/utils/AuthChecker';
 
 const GlobalProvider = () => {
   return (

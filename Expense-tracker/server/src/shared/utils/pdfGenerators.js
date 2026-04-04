@@ -4,6 +4,8 @@ export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, 
   try {
     const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
 
+    console.log("total amount",totalAmount,title,"data",data,startDate,endDate)
+
     // ✅ HTML Template
     const html = `
       <html>

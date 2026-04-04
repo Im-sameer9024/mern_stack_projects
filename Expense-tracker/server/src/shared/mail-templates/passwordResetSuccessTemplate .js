@@ -1,4 +1,4 @@
-export const passwordResetSuccessTemplate = (name) => `
+export const passwordResetSuccessTemplate = (name, loginUrl) => `
   <div style="
     font-family: Arial, sans-serif;
     background-color: #f4f4f5;
@@ -26,7 +26,7 @@ export const passwordResetSuccessTemplate = (name) => `
       </p>
 
       <div style="text-align: center; margin: 20px 0;">
-        <a href="${process.env.FRONTEND_URL}/login" 
+        <a href="${loginUrl}" 
            style="
              display: inline-block;
              padding: 10px 20px;

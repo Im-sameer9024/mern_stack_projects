@@ -5,17 +5,19 @@ import { formatDate } from '../../shared/utils/helpers.js';
 import ApiError from '../../shared/utils/apiError.js';
 import Transaction from '../transaction/transaction.schema.js';
 import { sortTypes, TransactionTypes } from '../../shared/utils/constants.js';
+import mongoose from 'mongoose';
 
 const AddExpense = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { category, amount } = req.body;
+    const { source, amount, date } = req.body;
 
     const newExpense = await Expense.create({
       userId,
-      category,
+      source,
       amount,
+      date: new Date(date),
     });
 
     //------------- Create transaction ------------
@@ -25,7 +27,8 @@ const AddExpense = async (req, res) => {
       transactionId: newExpense?._id,
       transactionType: TransactionTypes.EXPENSE,
       transactionAmount: amount,
-      source: category,
+      source: source,
+      transactionDate: newExpense.date,
     });
 
     return ApiResponse(res, 200, { newExpense, newTransaction }, 'Expense added successfully');
@@ -34,18 +37,57 @@ const AddExpense = async (req, res) => {
   }
 };
 
+const EditExpense = async (req, res) => {
+  try {
+    const { expenseId, amount, date, source } = req.body;
+
+    const [updatedExpense, updatedTransaction] = await Promise.all([
+      Expense.findByIdAndUpdate(
+        expenseId,
+        {
+          amount,
+          date: new Date(date),
+          source,
+        },
+        { new: true }
+      ),
+      Transaction.findOneAndUpdate(
+        {
+          transactionId: expenseId,
+          transactionType: TransactionTypes.EXPENSE,
+        },
+        {
+          transactionAmount: amount,
+          source: source,
+          transactionDate: new Date(date),
+        },
+        { new: true }
+      ),
+    ]);
+
+    return ApiResponse(
+      res,
+      200,
+      { updatedExpense, updatedTransaction },
+      'Expense updated successfully'
+    );
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
 const GetAllExpense = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const { id } = req.user;
 
     // sort = latest | oldest | high | low
-    let { startDate, endDate, page = 1, limit = 10, sort = sortTypes.LATEST, category } = req.query;
+    let { startDate, endDate, page = 1, limit = 10, sort = sortTypes.LATEST, source } = req.query;
 
     page = parseInt(page);
     limit = parseInt(limit);
 
     let filter = {
-      userId: userId,
+      userId: id,
     };
 
     // date filter
@@ -57,11 +99,11 @@ const GetAllExpense = async (req, res) => {
       };
     }
 
-    // category filter
+    // source filter
 
-    if (category) {
-      filter.category = {
-        $regex: category,
+    if (source) {
+      filter.source = {
+        $regex: source,
         $options: 'i',
       };
     }
@@ -86,32 +128,37 @@ const GetAllExpense = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const [expenses, total,chartData] = await Promise.all([
+    const [expenses, total, chartData] = await Promise.all([
       Expense.find(filter).sort(sortOption).skip(skip).limit(limit),
       Expense.countDocuments(filter),
       Expense.aggregate([
-              {
-                $group:{
-                  _id:{
-                    month:{
-                      $month:"$createdAt"
-                    },
-                    year:{
-                      $year:"$createdAt"
-                    }
-                  },
-                  totalAmount:{
-                    $sum:"$amount"
-                  }
-                }
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(id),
+          },
+        },
+        {
+          $group: {
+            _id: {
+              month: {
+                $month: '$date',
               },
-              {
-                $sort:{
-                  "_id.year":1,
-                  "_id.month":1
-                }
-              }
-            ])
+              year: {
+                $year: '$date',
+              },
+            },
+            totalAmount: {
+              $sum: '$amount',
+            },
+          },
+        },
+        {
+          $sort: {
+            '_id.year': 1,
+            '_id.month': 1,
+          },
+        },
+      ]),
     ]);
 
     return ApiResponse(
@@ -131,6 +178,26 @@ const GetAllExpense = async (req, res) => {
     );
   } catch (error) {
     return ApiResponse(res, 500, error, 'Something went wrong');
+  }
+};
+
+const GetSingleExpense = async (req, res) => {
+  try {
+    const { expenseId } = req.params;
+
+    if (!expenseId) {
+      return ApiResponse(res, 404, null, 'ExpenseId not found');
+    }
+
+    const expense = await Expense.findById(expenseId);
+
+    if (!expense) {
+      return ApiResponse(res, 404, null, 'Expense not found');
+    }
+
+    return ApiResponse(res, 200, expense, 'Expense fetched successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
   }
 };
 
@@ -157,6 +224,21 @@ const DeleteExpense = async (req, res) => {
   }
 };
 
+const DeleteAllExpense = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await Promise.all([
+      Expense.deleteMany({ userId: userId }),
+      Transaction.deleteMany({ userId: userId, transactionType: TransactionTypes.EXPENSE }),
+    ]);
+
+    return ApiResponse(res, 200, null, 'All Expense deleted successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
 const DownloadExpense = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -173,8 +255,15 @@ const DownloadExpense = async (req, res) => {
         .select('date')
         .limit(1);
 
+      const lastExpense = await Expense.findOne({ userId })
+        .sort({
+          date: -1,
+        })
+        .select('date')
+        .limit(1);
+
       startDate = firstExpense?.date || new Date(); // fallback if no data
-      endDate = new Date();
+      endDate = lastExpense?.date || new Date();
     }
 
     // ---- Apply date filter ----
@@ -187,7 +276,7 @@ const DownloadExpense = async (req, res) => {
       .sort({
         date: -1,
       })
-      .select('category amount date');
+      .select('source amount date');
 
     //------- create pdf ----------
 
@@ -203,4 +292,4 @@ const DownloadExpense = async (req, res) => {
   }
 };
 
-export { AddExpense, GetAllExpense, DeleteExpense, DownloadExpense };
+export { AddExpense, GetAllExpense,GetSingleExpense, DeleteExpense, DownloadExpense, EditExpense, DeleteAllExpense };

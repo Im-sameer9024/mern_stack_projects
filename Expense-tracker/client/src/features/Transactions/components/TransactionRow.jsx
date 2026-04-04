@@ -4,7 +4,9 @@ import { LuTrendingDown, LuTrendingUp } from 'react-icons/lu';
 
 const TransactionRow = ({ rowData }) => {
   return (
-    <div className={`flex items-center justify-between  p-2 rounded-md transition-all duration-300 ease-in-out ${rowData?.transactionType === 'income' ? 'hover:bg-green-50' : 'hover:bg-red-50'}`}>
+    <div
+      className={`flex items-center justify-between  p-2 rounded-md transition-all duration-300 ease-in-out ${rowData?.transactionType === 'income' ? 'hover:bg-green-50' : 'hover:bg-red-50'}`}
+    >
       {/* left side  */}
       <div className=" -space-y-1">
         <h3 className=" text-slate-600 font-semibold text-sm capitalize ">{rowData?.source}</h3>

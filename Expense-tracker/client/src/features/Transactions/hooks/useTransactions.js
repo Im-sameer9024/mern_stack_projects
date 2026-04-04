@@ -5,7 +5,7 @@ export const useGetAllTransactions = ({ page, limit, sort, startDate, endDate })
   const temp = localStorage.getItem('temp');
 
   return useQuery({
-    queryKey: ['transactions',temp,page,limit,sort,startDate,endDate],
+    queryKey: ['transactions', temp],
     queryFn: () =>
       transactionApiOperations.GetAllTransactions({ page, limit, sort, startDate, endDate }),
   });

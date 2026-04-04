@@ -54,7 +54,7 @@ const ExpensePage = () => {
   };
 
   return (
-    <div className=' space-y-4'>
+    <div className=" space-y-4">
       <ContentWrapper
         title={'Expense Overview'}
         type={'chart'}

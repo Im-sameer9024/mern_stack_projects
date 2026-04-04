@@ -15,21 +15,21 @@ const AddIncomeForm = ({ CloseForm }) => {
   } = useForm({
     defaultValues: {
       source: '',
-      amount: null,
-      date: null,
+      amount: '',
+      date: '',
     },
   });
 
-  const {
-    mutateAsync: AddIncome,
-    isPending: AddIncomePending,
-    
-  } = useAddIncome();
+  const { mutateAsync: AddIncome, isPending: AddIncomePending } = useAddIncome();
 
   const HandleSubmitAddIncome = async (data) => {
     try {
       await AddIncome(data);
-      reset();
+      reset({
+        source: '',
+        amount: '',
+        date: '',
+      });
       CloseForm();
     } catch (error) {
       toast.error(GetApiErrorMessage(error));

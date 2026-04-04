@@ -9,8 +9,13 @@ export const useAddIncome = () => {
   return useMutation({
     mutationFn: incomeApiOperations.AddIncome,
     onSuccess: (data) => {
+      // ✅ invalidate ALL income lists (with filters)
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['transactions', temp],
       });
       toast.success(GetApiResponseMessage(data));
     },
@@ -24,10 +29,25 @@ export const useUpdateIncome = () => {
   const temp = localStorage.getItem('temp');
   return useMutation({
     mutationFn: incomeApiOperations.UpdateIncome,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const incomeId = variables?.incomeId;
+
+      console.log(incomeId);
+      // invalidate list
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
       });
+
+      //invalidate single
+      queryClient.invalidateQueries({
+        queryKey: ['income', temp, incomeId],
+      });
+
+      //invalidate transactions list
+      queryClient.invalidateQueries({
+        queryKey: ['transactions', temp],
+      });
+
       toast.success(GetApiResponseMessage(data));
     },
     onError: (error) => {
@@ -43,6 +63,9 @@ export const useDeleteIncome = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['transactions', temp],
       });
       toast.success(GetApiResponseMessage(data));
     },
@@ -61,6 +84,9 @@ export const useDeleteAllIncomes = () => {
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['transactions', temp],
+      });
       toast.success(GetApiResponseMessage(data));
     },
     onError: (error) => {
@@ -70,8 +96,10 @@ export const useDeleteAllIncomes = () => {
 };
 
 export const useGetSingleIncome = (incomeId) => {
+  const temp = localStorage.getItem('temp');
+
   return useQuery({
-    queryKey: ['incomes', incomeId],
+    queryKey: ['income', temp, incomeId],
     queryFn: () => incomeApiOperations.GetSingleIncome(incomeId),
     enabled: !!incomeId,
   });
@@ -80,7 +108,7 @@ export const useGetSingleIncome = (incomeId) => {
 export const useGetAllIncomes = ({ page, limit, sort, startDate, endDate, source }) => {
   const temp = localStorage.getItem('temp');
   return useQuery({
-    queryKey: ['incomes', temp, page, limit, sort, startDate, endDate],
+    queryKey: ['incomes', temp, { page, limit, sort, startDate, endDate, source }],
     queryFn: () =>
       incomeApiOperations.GetAllIncomes({ page, limit, sort, startDate, endDate, source }),
   });

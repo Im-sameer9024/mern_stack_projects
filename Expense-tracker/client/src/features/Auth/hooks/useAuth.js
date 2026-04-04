@@ -67,3 +67,30 @@ export const useLogoutUser = () => {
     },
   });
 };
+
+export const useResetPasswordLink = () => {
+  return useMutation({
+    mutationFn: AuthApiOperations.ResetPasswordLink,
+    onSuccess: (data) => {
+      toast.success(GetApiResponseMessage(data));
+    },
+    onError: (error) => {
+      toast.error(GetApiErrorMessage(error));
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: AuthApiOperations.ResetPassword,
+    onSuccess: (data) => {
+      toast.success(GetApiResponseMessage(data));
+      navigate('/login');
+    },
+    onError: (error) => {
+      toast.error(GetApiErrorMessage(error));
+    },
+  });
+};

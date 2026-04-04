@@ -4,11 +4,6 @@ import CustomTooltip from './CustomTooltip';
 import CustomLegend from './CustomLegend';
 
 const FinancialPieChart = ({ data, label, totalAmount, colors, showTextAnchor }) => {
-
-
-
-
-
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
@@ -24,7 +19,7 @@ const FinancialPieChart = ({ data, label, totalAmount, colors, showTextAnchor })
           activeShape={false}
         >
           {data.map((entry, index) => {
-            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]}  />;
+            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
           })}
         </Pie>
         <Tooltip content={<CustomTooltip />} />

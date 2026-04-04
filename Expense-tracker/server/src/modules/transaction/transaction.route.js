@@ -6,5 +6,4 @@ const route = express.Router();
 
 route.get('/get-all-transactions', auth, GetAllTransactions);
 
-
 export default route;

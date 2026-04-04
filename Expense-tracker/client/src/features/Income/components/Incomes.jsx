@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import IncomeRow from './IncomeRow';
 import { Plus } from 'lucide-react';
 import CustomButton from '@/shared/components/custom/CustomButton';
-import Modal from '@/shared/components/custom/Modal';
 import { useLocation } from 'react-router-dom';
+
+const Modal = lazy(() => import('@/shared/components/custom/Modal'));
 
 const Incomes = ({ data, AddIncomeForm, showIncomeForm, CloseForm, OpenForm }) => {
   const path = useLocation().pathname;

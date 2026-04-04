@@ -1,7 +1,5 @@
 import CustomButton from '@/shared/components/custom/CustomButton';
-import Modal from '@/shared/components/custom/Modal';
-import { Plus } from 'lucide-react';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { MdOutlineFileDownload } from 'react-icons/md';
 const DataWrapper = ({
   title,
@@ -12,7 +10,6 @@ const DataWrapper = ({
   isLoading,
   skeleton,
   skeletonCount = 4,
-  
 }) => {
   return (
     <div className=" ">
@@ -41,7 +38,7 @@ const DataWrapper = ({
         </div>
       )}
 
-      {!isError && !isLoading && <div>{content}</div>}
+      {!isError && !isLoading && <Suspense fallback={skeleton}>{content}</Suspense>}
 
       {/*--------------- pagination -------------- */}
     </div>

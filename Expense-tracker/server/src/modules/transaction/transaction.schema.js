@@ -8,9 +8,9 @@ const transactionSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    transactionId:{
-        type:String,
-        required:true
+    transactionId: {
+      type: String,
+      required: true,
     },
     transactionType: {
       type: String,

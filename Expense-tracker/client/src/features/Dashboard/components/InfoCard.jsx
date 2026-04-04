@@ -12,7 +12,9 @@ const InfoCard = ({ icon, title, value, color, errorMessage, isError, isLoading 
         {!isError && isLoading && <Spinner />}
 
         {!isError && !isLoading && (
-          <span className={`font-semibold font-content text-xl ${value < 0 && "text-red-500"}`}>₹ {value} </span>
+          <span className={`font-semibold font-content text-xl ${value < 0 && 'text-red-500'}`}>
+            ₹ {value}{' '}
+          </span>
         )}
       </div>
     </div>

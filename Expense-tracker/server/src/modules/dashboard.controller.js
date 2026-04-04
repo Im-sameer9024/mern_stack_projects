@@ -10,8 +10,6 @@ export const GetDashboardData = async (req, res) => {
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
-   
-
     return ApiResponse(res, 200, null, 'Dashboard Data Fetched Successfully');
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);

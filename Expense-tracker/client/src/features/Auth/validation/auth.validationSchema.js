@@ -53,4 +53,14 @@ const SignupTest = z.object({
     .max(18, { message: 'Password must be at most 18 char' }),
 });
 
-export { LoginValidationSchema, SignupValidationSchema, SignupTest, LoginTest };
+const forgotPasswordEmailValidationSchema = z.object({
+  email: z.email({ message: 'Email is not valid' }),
+});
+
+export {
+  LoginValidationSchema,
+  forgotPasswordEmailValidationSchema,
+  SignupValidationSchema,
+  SignupTest,
+  LoginTest,
+};

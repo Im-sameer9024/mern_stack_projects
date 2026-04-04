@@ -1,7 +1,7 @@
-import React from 'react'
+import React from 'react';
 import ExpenseRow from './ExpenseRow';
 
-const Expenses = ({data}) => {
+const Expenses = ({ data }) => {
   return (
     <>
       {data.length === 0 && <p className=" text-center">No Expenses Found</p>}
@@ -10,7 +10,7 @@ const Expenses = ({data}) => {
           return <ExpenseRow rowData={income} key={income._id} />;
         })}
     </>
-  )
-}
+  );
+};
 
-export default Expenses
+export default Expenses;

@@ -2,7 +2,6 @@ import { apiConnector } from '@/services/apiConnector';
 import { incomeApiUrls } from '@/services/apiEndpoints';
 
 export const incomeApiOperations = {
-
   //--------------- add income ---------------
   AddIncome: async (data) => {
     const response = await apiConnector({
@@ -12,7 +11,6 @@ export const incomeApiOperations = {
     });
     return response.data;
   },
-
 
   //------------------- Update income -----------------------
 
@@ -48,12 +46,12 @@ export const incomeApiOperations = {
 
   //--------------------- get single income -----------------------------
 
-  GetSingleIncome:async(incomeId) =>{
+  GetSingleIncome: async (incomeId) => {
     const response = await apiConnector({
       method: 'GET',
       url: incomeApiUrls.GET_SINGLE_INCOME(incomeId),
-    })
-    return response.data
+    });
+    return response.data;
   },
 
   //--------------------- get all incomes -----------------------------

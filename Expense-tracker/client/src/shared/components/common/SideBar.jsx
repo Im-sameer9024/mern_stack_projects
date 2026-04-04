@@ -1,14 +1,15 @@
 import { SidebarLinks } from '@/shared/data/data';
-import React, { useState } from 'react';
+import React, { lazy, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react';
 import { IoIosSwap } from 'react-icons/io';
 import clsx from 'clsx';
-import Modal from '../custom/Modal';
 import CustomButton from '../custom/CustomButton';
 import { useLogoutUser } from '@/features/Auth/hooks/useAuth';
 import { LogOut } from 'lucide-react';
+
+const Modal = lazy(() => import('../custom/Modal'));
 
 const SideBar = () => {
   const path = useLocation().pathname;
@@ -59,7 +60,7 @@ const SideBar = () => {
                 >
                   {/* Icon */}
                   <span className="text-lg flex items-center justify-center">
-                  <LogOut/>
+                    <LogOut />
                   </span>
 
                   {/* Text */}

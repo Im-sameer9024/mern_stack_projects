@@ -10,15 +10,12 @@ import Incomes from '@/features/Income/components/Incomes';
 import { useGetAllExpense } from '@/features/Expense/hooks/useExpense';
 import Expenses from '@/features/Expense/components/Expenses';
 
-
-const BarChartSkeleton = lazy(() => import("@/shared/components/skeletons/BarChartSkeleton"))
-const CustomBarChart = lazy(() => import("../components/CustomBarChart"))
-const FinancialChartSkeleton = lazy(() => import("@/shared/components/skeletons/FinancialChartSkeleton"))
-const FinancialPieChart = lazy(() => import("../components/FinancialPieChart"))
-
-
-
-
+const BarChartSkeleton = lazy(() => import('@/shared/components/skeletons/BarChartSkeleton'));
+const CustomBarChart = lazy(() => import('../components/CustomBarChart'));
+const FinancialChartSkeleton = lazy(
+  () => import('@/shared/components/skeletons/FinancialChartSkeleton')
+);
+const FinancialPieChart = lazy(() => import('../components/FinancialPieChart'));
 
 const DashboardPage = () => {
   //------------------------ api hooks --------------------
@@ -59,7 +56,6 @@ const DashboardPage = () => {
   const IncomesFinalData = IncomesData?.data;
   const ExpenseFinalData = ExpenseData?.data;
 
-
   const balanceData = [
     {
       name: 'Total Balance',
@@ -76,7 +72,7 @@ const DashboardPage = () => {
   ];
 
   return (
-    <div>
+    <>
       {/*---------------- total information section -------------- */}
 
       <TotalDetails
@@ -144,11 +140,7 @@ const DashboardPage = () => {
           isLoading={IncomesPending}
           skeleton={<BarChartSkeleton />}
           skeletonCount={1}
-          content={
-            <CustomBarChart
-              apiData={IncomesFinalData?.chartData}
-            />
-          }
+          content={<CustomBarChart apiData={IncomesFinalData?.chartData} />}
         />
       </div>
 
@@ -166,7 +158,7 @@ const DashboardPage = () => {
           navigationPath={'/expenses'}
         />
 
-         <ContentWrapper
+        <ContentWrapper
           title={'Expenses Overview'}
           type={'chart'}
           errorMessage={ExpenseErrorMessage?.message}
@@ -174,14 +166,10 @@ const DashboardPage = () => {
           isLoading={ExpensePending}
           skeleton={<BarChartSkeleton />}
           skeletonCount={1}
-          content={
-            <CustomBarChart
-              apiData={ExpenseFinalData?.chartData}
-            />
-          }
+          content={<CustomBarChart apiData={ExpenseFinalData?.chartData} />}
         />
       </div>
-    </div>
+    </>
   );
 };
 

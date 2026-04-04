@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginTest, LoginValidationSchema } from '@/features/Auth/validation/auth.validationSchema';
 import { useLoginUser } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const { mutateAsync: LoginUser, isPending: isLoginUserLoading } = useLoginUser();
@@ -26,7 +27,7 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(OnSubmitHandler)} className=" space-y-2">
+    <form onSubmit={handleSubmit(OnSubmitHandler)} className=" space-y-3">
       {/*-------------- Email field ------------------- */}
       <InputField
         label={'Email Address'}
@@ -49,6 +50,12 @@ const LoginForm = () => {
         loading={isLoginUserLoading}
         control={control}
       />
+
+      <p className=" text-xs text-blue-500 hover:text-blue-600 text-end">
+        <Link to={'/forgot-password'} className=" hover:underline">
+          Forgot Password
+        </Link>
+      </p>
 
       <CustomButton fullWidth={true} type="submit" active={true} loading={isLoginUserLoading}>
         Log In

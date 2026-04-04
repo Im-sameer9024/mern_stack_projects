@@ -1,19 +1,31 @@
 import { HomeAuthImage } from '@/assets/images/images';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 const AuthLayout = () => {
+  const path = useLocation().pathname;
+
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
       {/* ------------ Left Side (Form Section) ------------ */}
       <div className="flex flex-1 items-center justify-center px-6 py-10">
         <div className="w-full max-w-md space-y-6">
           {/* Heading */}
-          <div className="space-y-2 text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-bold font-heading">Welcome Back 👋</h1>
-            <p className="text-gray-500 text-sm md:text-base font-content">
-              Please enter your details to connect with us.
-            </p>
-          </div>
+          {(path === '/login' || path === '/signup') && (
+            <div className="space-y-2 text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold font-heading"> Welcome Back 👋</h1>
+              <p className="text-gray-500 text-sm md:text-base font-content">
+                Please enter your details to connect with us.
+              </p>
+            </div>
+          )}
+          {(path === '/forgot-password' || path.startsWith('/reset-password-token')) && (
+            <div className="space-y-2 text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold font-heading text-center">
+                {' '}
+                Forgot Password 👋
+              </h1>
+            </div>
+          )}
 
           {/* Form Outlet */}
           <div>

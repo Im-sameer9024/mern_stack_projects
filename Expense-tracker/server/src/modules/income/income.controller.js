@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ApiError from '../../shared/utils/apiError.js';
 import ApiResponse from '../../shared/utils/apiResponse.js';
 import { sortTypes, TransactionTypes } from '../../shared/utils/constants.js';
@@ -26,6 +27,7 @@ const AddIncome = async (req, res) => {
       transactionType: TransactionTypes.INCOME,
       transactionAmount: amount,
       source: source,
+      transactionDate: newIncome.date,
     });
 
     return ApiResponse(res, 201, { newIncome, newTransaction }, 'Income added successfully');
@@ -42,17 +44,33 @@ const EditIncome = async (req, res) => {
       return ApiResponse(res, 400, null, 'Income id is required');
     }
 
-    const updatedIncome = await Income.findByIdAndUpdate(
-      incomeId,
-      {
-        amount,
-        date: new Date(date),
-        source,
-      },
-      { new: true }
-    );
+    const [updateTransaction, updatedIncome] = await Promise.all([
+      Income.findByIdAndUpdate(
+        incomeId,
+        {
+          amount,
+          date: new Date(date),
+          source,
+        },
+        { new: true }
+      ),
+      Transaction.findOneAndUpdate(
+        { transactionId: incomeId, transactionType: TransactionTypes.INCOME },
+        {
+          transactionAmount: amount,
+          source: source,
+          transactionDate: new Date(date),
+        },
+        { new: true }
+      ),
+    ]);
 
-    return ApiResponse(res, 200, updatedIncome, 'Income updated successfully');
+    return ApiResponse(
+      res,
+      200,
+      { updateTransaction, updatedIncome },
+      'Income updated successfully'
+    );
   } catch (error) {
     return ApiError(res, 500, null, error.message, error);
   }
@@ -117,13 +135,18 @@ const GetAllIncome = async (req, res) => {
       Income.countDocuments(filter),
       Income.aggregate([
         {
+          $match: {
+            userId: new mongoose.Types.ObjectId(id),
+          },
+        },
+        {
           $group: {
             _id: {
               month: {
-                $month: '$createdAt',
+                $month: '$date',
               },
               year: {
-                $year: '$createdAt',
+                $year: '$date',
               },
             },
             totalAmount: {
@@ -224,7 +247,7 @@ const DownloadIncome = async (req, res) => {
     let { startDate, endDate } = req.query;
 
     // ---- Base filter ----
-    const filter = { userId };
+    const filter = { userId: userId };
 
     // ---- If dates NOT provided → auto set ----
     if (!startDate || !endDate) {
@@ -233,8 +256,13 @@ const DownloadIncome = async (req, res) => {
         .select('date')
         .limit(1);
 
+      const lastIncome = await Income.findOne({ userId })
+        .sort({ date: -1 })
+        .select('date')
+        .limit(1);
+
       startDate = firstIncome?.date || new Date(); // fallback if no data
-      endDate = new Date();
+      endDate = lastIncome?.date || new Date();
     }
 
     // ---- Apply date filter ----
@@ -243,14 +271,16 @@ const DownloadIncome = async (req, res) => {
       $lte: new Date(endDate),
     };
 
+    console.log(startDate, endDate, filter);
+
     // Fetch income data based on filter
-    const incomes = await Income.find(filter)
-      .sort({
-        date: -1, // Sort by date in descending order
-      })
-      .select('source amount date'); // Select only specific fields
+    const incomes = await Income.find(filter).sort({
+      date: 1,
+    });
 
     //--------- create pdf ---------
+
+    console.log('Incomes is here', incomes);
 
     return GenerateIncomePDF(res, {
       title: 'Income_Report',
@@ -265,4 +295,12 @@ const DownloadIncome = async (req, res) => {
   }
 };
 
-export { AddIncome, GetAllIncome, DeleteIncome, DownloadIncome, DeleteAllIncome, EditIncome,GetSingleIncome };
+export {
+  AddIncome,
+  GetAllIncome,
+  DeleteIncome,
+  DownloadIncome,
+  DeleteAllIncome,
+  EditIncome,
+  GetSingleIncome,
+};

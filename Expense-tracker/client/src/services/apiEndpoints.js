@@ -4,6 +4,8 @@ export const userApiUrls = {
   REFRESH_TOKEN: '/user/refresh-token',
   LOGOUT_USER: '/user/logout',
   GET_USER_DETAILS: '/user/user-details',
+  FORGOT_PASSWORD_LINK: '/user/forgot-password',
+  FORGOT_PASSWORD: '/user/reset-password',
 };
 
 export const expenseApiUrls = {

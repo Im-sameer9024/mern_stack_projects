@@ -25,9 +25,7 @@ const UpdateIncomeForm = ({
       {!IncomeError && !IncomePending && IncomeData && (
         <form onSubmit={handleSubmit(HandleUpdateIncome)} className="space-y-4">
           <div>
-            <h3 className="text-slate-600 font-semibold text-xl font-heading">
-              Update Income
-            </h3>
+            <h3 className="text-slate-600 font-semibold text-xl font-heading">Update Income</h3>
             <hr className="border-slate-600" />
           </div>
 
@@ -60,13 +58,7 @@ const UpdateIncomeForm = ({
             control={control}
           />
 
-          <CustomButton
-            fullWidth
-            type="submit"
-            active
-            loading={isUpdating}
-            className="mt-4"
-          >
+          <CustomButton fullWidth type="submit" active loading={isUpdating} className="mt-4">
             Update Income
           </CustomButton>
         </form>
