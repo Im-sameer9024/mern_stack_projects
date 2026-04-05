@@ -15,7 +15,7 @@ const route = express.Router();
 route.post('/add', auth, AddIncome);
 route.delete('/delete', auth, DeleteIncome);
 route.get('/get-all-incomes', auth, GetAllIncome);
-route.post('/download-pdf', auth, DownloadIncome);
+route.get('/download-pdf', auth, DownloadIncome);
 route.put('/update-income', auth, EditIncome);
 route.delete('/delete-all-incomes', auth, DeleteAllIncome);
 route.get('/get-single-income/:incomeId', auth, GetSingleIncome);

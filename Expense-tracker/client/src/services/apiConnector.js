@@ -138,12 +138,13 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export const apiConnector = ({ method, url, bodyData, headers, params }) => {
+export const apiConnector = ({ method, url, bodyData, headers, params, responseType }) => {
   return axiosInstance({
     method: method,
     url: url,
     data: bodyData ? bodyData : null,
     headers: headers ? headers : null,
     params: params ? params : null,
+    responseType: responseType ? responseType : null,
   });
 };

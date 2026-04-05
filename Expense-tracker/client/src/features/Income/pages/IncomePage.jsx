@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetAllIncomes } from '../hooks/useIncomes';
+import { useDownloadIncomePdf, useGetAllIncomes } from '../hooks/useIncomes';
 import DataWrapper from '@/features/DataWrapper';
 import FilterSection from '@/features/FilterSection';
 import Incomes from '../components/Incomes';
@@ -48,6 +48,11 @@ const IncomePage = () => {
     endDate: filters?.endDate,
   });
 
+  const { mutate: DownloadIncomePDF, isPending: DownloadIncomePDFPending } = useDownloadIncomePdf({
+    startDate: filters?.startDate,
+    endDate: filters?.endDate,
+  });
+
   const IncomesFinalDate = IncomesData?.data;
 
   const filterChangeHandler = (name, value) => {
@@ -92,6 +97,8 @@ const IncomePage = () => {
               onReset={resetFilter}
             />
           }
+
+          DownloadIncomePDF={DownloadIncomePDF}
           //----------- show contents of data -----------
           content={
             <Incomes

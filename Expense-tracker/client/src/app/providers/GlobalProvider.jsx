@@ -6,6 +6,11 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from '@/shared/utils/reactQuery';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
+/**
+ * GlobalProvider component that wraps the entire application with necessary providers
+ * This component sets up the global state management, routing, and development tools
+ * @returns {JSX.Element} The wrapped application with all providers
+ */
 const GlobalProvider = () => {
   return (
     <QueryClientProvider client={queryClient}>

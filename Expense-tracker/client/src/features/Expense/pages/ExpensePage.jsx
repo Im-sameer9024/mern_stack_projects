@@ -8,8 +8,19 @@ import EntryRowSkeleton from '@/shared/components/skeletons/EntryRowSkeleton';
 import ContentWrapper from '@/features/Dashboard/components/ContentWrapper';
 import BarChartSkeleton from '@/shared/components/skeletons/BarChartSkeleton';
 import CustomBarChart from '@/features/Dashboard/components/CustomBarChart';
+import AddExpenseForm from '../components/AddExpenseForm';
 
 const ExpensePage = () => {
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+
+  const OpenForm = () => {
+    setShowExpenseForm(true);
+  };
+
+  const CloseForm = () => {
+    setShowExpenseForm(false);
+  };
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -75,7 +86,15 @@ const ExpensePage = () => {
               onReset={resetFilter}
             />
           }
-          content={<Expenses data={ExpenseFinalDate?.expenses || []} />}
+          content={
+            <Expenses
+              showExpenseForm={showExpenseForm}
+              AddExpenseForm={<AddExpenseForm CloseForm={CloseForm} />}
+              CloseForm={CloseForm}
+              OpenForm={OpenForm}
+              data={ExpenseFinalDate?.expenses || []}
+            />
+          }
           errorMessage={ExpenseErrorMessage?.message}
           isError={ExpenseError}
           isLoading={ExpensePending}

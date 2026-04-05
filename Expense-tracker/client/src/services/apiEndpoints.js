@@ -10,16 +10,19 @@ export const userApiUrls = {
 
 export const expenseApiUrls = {
   ADD_EXPENSE: '/expense/add',
+  UPDATE_EXPENSE: '/expense/update-expense',
   DELETE_EXPENSE: '/expense/delete',
+  GET_SINGLE_EXPENSE: (expenseId) => `/expense/get-single-expense/${expenseId}`,
   GET_ALL_EXPENSES: (params) => `/expense/get-all-expenses?${params}`,
   DOWNLOAD_EXPENSES_PDF: '/expense/download-pdf',
+  DELETE_ALL_EXPENSES: '/expense/delete-all-expenses',
 };
 
 export const incomeApiUrls = {
   ADD_INCOME: '/income/add',
   DELETE_INCOME: '/income/delete',
   GET_ALL_INCOMES: (params) => `/income/get-all-incomes?${params}`,
-  DOWNLOAD_INCOMES_PDF: '/income/download-pdf',
+  DOWNLOAD_INCOMES_PDF: (params) => `/income/download-pdf/${params}`,
   DELETE_ALL_INCOMES: '/income/delete-all-incomes',
   UPDATE_INCOME: '/income/update-income',
   GET_SINGLE_INCOME: (incomeId) => `/income/get-single-income/${incomeId}`,

@@ -72,4 +72,17 @@ export const incomeApiOperations = {
 
     return response.data;
   },
+
+  DownloadPdfIncome:async({startDate,endDate})=>{
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    const response = await apiConnector({
+      method:"GET",
+      url:incomeApiUrls.DOWNLOAD_INCOMES_PDF(params.toString()),
+      responseType: "blob",
+    })
+    return response.data;
+  }
 };

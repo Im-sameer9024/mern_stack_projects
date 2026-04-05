@@ -153,7 +153,6 @@ const IncomeRow = ({ rowData, path }) => {
             HandleUpdateIncome={HandleUpdateIncome}
             handleSubmit={handleSubmit}
             errors={errors}
-            CloseForm={CloseUpdateForm}
             isUpdating={isUpdating}
             //------- single income data----
             IncomeData={IncomeActualData}

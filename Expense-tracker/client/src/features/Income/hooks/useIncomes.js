@@ -60,9 +60,15 @@ export const useDeleteIncome = () => {
   const temp = localStorage.getItem('temp');
   return useMutation({
     mutationFn: incomeApiOperations.DeleteIncome,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const incomeId = variables?.incomeId;
+
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
+      });
+      //invalidate single
+      queryClient.invalidateQueries({
+        queryKey: ['income', temp, incomeId],
       });
       queryClient.invalidateQueries({
         queryKey: ['transactions', temp],
@@ -111,5 +117,29 @@ export const useGetAllIncomes = ({ page, limit, sort, startDate, endDate, source
     queryKey: ['incomes', temp, { page, limit, sort, startDate, endDate, source }],
     queryFn: () =>
       incomeApiOperations.GetAllIncomes({ page, limit, sort, startDate, endDate, source }),
+  });
+};
+
+export const useDownloadIncomePdf = ({ startDate, endDate }) => {
+  return useMutation({
+    mutationFn: () => incomeApiOperations.DownloadPdfIncome({ startDate, endDate }),
+    onSuccess: (data) => {
+      const url = window.URL.createObjectURL(data); // no need new Blob
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'expense-report.pdf';
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('PDF downloaded successfully');
+    },
+    onError: (error) => {
+      toast.error(GetApiErrorMessage(error));
+    },
   });
 };
