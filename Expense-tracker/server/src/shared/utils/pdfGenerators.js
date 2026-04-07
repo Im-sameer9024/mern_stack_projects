@@ -1,235 +1,332 @@
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
+import fontkit from '@pdf-lib/fontkit';
 
-export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, formatDate }) => {
+export const GenerateIncomePDF = async (
+  res,
+  { title, data = [], startDate, endDate, formatDate }
+) => {
   try {
-    const safeData = Array.isArray(data) ? data : [];
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
 
-    const totalAmount = safeData.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    const font = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Regular.ttf'))
+    );
+    const boldFont = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Bold.ttf'))
+    );
 
-    const html = `
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-            th { background: #2c3e50; color: white; }
-            .amount { text-align: right; }
-          </style>
-        </head>
-        <body>
-          <h1>${title || 'Income Report'}</h1>
+    let page = pdfDoc.addPage([842, 595]);
+    let { width, height } = page.getSize();
 
-          <p>
-            From: ${startDate ? formatDate(startDate) : 'N/A'} |
-            To: ${endDate ? formatDate(endDate) : 'N/A'}
-          </p>
+    const formatCurrency = (amount) =>
+      `₹${(amount || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+      })}`;
 
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Date</th>
-                <th>Source</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
+    let y = height - 40;
 
-            <tbody>
-              ${
-                safeData.length === 0
-                  ? `<tr><td colspan="4">No Data</td></tr>`
-                  : safeData
-                      .map(
-                        (item, i) => `
-                        <tr>
-                          <td>${i + 1}</td>
-                          <td>${item.date ? formatDate(item.date) : 'N/A'}</td>
-                          <td>${item.source || 'N/A'}</td>
-                          <td class="amount">₹ ${(Number(item.amount) || 0).toFixed(2)}</td>
-                        </tr>
-                      `
-                      )
-                      .join('')
-              }
-
-              <tr>
-                <td colspan="3"><b>Total</b></td>
-                <td class="amount"><b>₹ ${totalAmount.toFixed(2)}</b></td>
-              </tr>
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-
-    // 🔥 Render-compatible browser
-    const browser = await puppeteer.launch({
-      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+    // ===== TITLE =====
+    page.drawText(title || 'Income Report', {
+      x: width / 2 - 100,
+      y,
+      size: 18,
+      font: boldFont,
     });
 
-    const page = await browser.newPage();
+    y -= 20;
 
-    await page.setContent(html, {
-      waitUntil: 'networkidle0',
-      timeout: 30000,
+    page.drawText(`From: ${formatDate(startDate)} | To: ${formatDate(endDate)}`, {
+      x: width / 2 - 150,
+      y,
+      size: 10,
+      font,
+      color: rgb(0.5, 0.5, 0.5),
     });
 
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
+    y -= 30;
+
+    const rowHeight = 25;
+    const colWidths = [60, 200, 250, 150];
+    const headers = ['S.No', 'Date', 'Source', 'Amount'];
+
+    const startX = 40;
+
+    // ===== HEADER DRAW FUNCTION =====
+    const drawHeader = () => {
+      let x = startX;
+
+      headers.forEach((h, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          color: rgb(0.2, 0.3, 0.4),
+        });
+
+        page.drawText(h, {
+          x: x + 5,
+          y: y + 8,
+          size: 10,
+          font: boldFont,
+          color: rgb(1, 1, 1),
+        });
+
+        x += colWidths[i];
+      });
+
+      y -= rowHeight;
+    };
+
+    drawHeader();
+
+    let total = 0;
+
+    // ===== ROWS =====
+    data.forEach((item, index) => {
+      // 🔥 PAGE BREAK
+      if (y < 60) {
+        page = pdfDoc.addPage([842, 595]);
+        ({ width, height } = page.getSize());
+        y = height - 40;
+
+        drawHeader(); // repeat header
+      }
+
+      const amount = Number(item.amount) || 0;
+      total += amount;
+
+      let x = startX;
+
+      const row = [index + 1, formatDate(item.date), item.source || 'N/A', formatCurrency(amount)];
+
+      row.forEach((cell, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          borderWidth: 0.5,
+          borderColor: rgb(0.8, 0.8, 0.8),
+        });
+
+        page.drawText(String(cell), {
+          x: x + 5,
+          y: y + 8,
+          size: 10,
+          font,
+          color: i === 3 ? rgb(0, 0.6, 0) : rgb(0, 0, 0), // 🟢 green
+        });
+
+        x += colWidths[i];
+      });
+
+      y -= rowHeight;
     });
 
-    await browser.close();
+    // ===== TOTAL =====
+    if (y < 60) {
+      page = pdfDoc.addPage([842, 595]);
+      y = height - 40;
+    }
+
+    let xTotal = startX;
+
+    const totalRow = ['', '', 'Total', formatCurrency(total)];
+
+    totalRow.forEach((cell, i) => {
+      page.drawRectangle({
+        x: xTotal,
+        y,
+        width: colWidths[i],
+        height: rowHeight,
+        color: rgb(0.9, 0.9, 0.9),
+      });
+
+      page.drawText(String(cell), {
+        x: xTotal + 5,
+        y: y + 8,
+        size: 10,
+        font: boldFont,
+      });
+
+      xTotal += colWidths[i];
+    });
+
+    const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=income-report.pdf');
 
-    res.end(pdfBuffer);
-  } catch (error) {
-    console.error('PDF ERROR:', error); // 🔥 IMPORTANT
-    res.status(500).json({ message: error.message });
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 };
-
-export const GenerateExpensePDF = async (res, { title, data, startDate, endDate, formatDate }) => {
+export const GenerateExpensePDF = async (
+  res,
+  { title, data = [], startDate, endDate, formatDate }
+) => {
   try {
-    const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
-    // ✅ HTML Template
-    const html = `
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              color: #333;
-            }
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
 
-            h1 {
-              text-align: center;
-              margin-bottom: 5px;
-            }
+    const font = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Regular.ttf'))
+    );
+    const boldFont = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Bold.ttf'))
+    );
 
-            .date-range {
-              text-align: center;
-              font-size: 12px;
-              margin-bottom: 20px;
-              color: gray;
-            }
+    let page = pdfDoc.addPage([842, 595]);
+    let { width, height } = page.getSize();
 
-            table {
-              width: 100%;
-              border-collapse: collapse;
-            }
+    const formatCurrency = (amt) =>
+      `₹${(amt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
-            th, td {
-              border: 1px solid #ddd;
-              padding: 10px;
-              text-align: center;
-            }
+    let y = height - 40;
 
-            th {
-              background-color: #e74c3c; /* 🔴 red theme for expense */
-              color: white;
-            }
-
-            tr:nth-child(even) {
-              background-color: #f9f9f9;
-            }
-
-            .total-row {
-              font-weight: bold;
-              background-color: #f1f1f1;
-            }
-
-            .amount {
-              text-align: right;
-              color: #c0392b;
-              font-weight: 600;
-            }
-          </style>
-        </head>
-
-        <body>
-          <h1>${title || 'Expense Report'}</h1>
-
-          <div class="date-range">
-            From: ${formatDate(startDate)} | To: ${formatDate(endDate)}
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Date</th>
-                <th>Source</th>
-                <th>Amount (₹)</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              ${data
-                .map(
-                  (item, index) => `
-                  <tr>
-                    <td>${index + 1}</td>
-                    <td>${formatDate(item.date)}</td>
-                    <td>${item.source || 'N/A'}</td>
-                    <td class="amount">₹ ${item.amount.toFixed(2)}</td>
-                  </tr>
-                `
-                )
-                .join('')}
-
-              <tr class="total-row">
-                <td colspan="3">Total</td>
-                <td class="amount">₹ ${totalAmount.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-
-    // ✅ Launch Puppeteer
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    // ===== TITLE =====
+    page.drawText(title || 'Expense Report', {
+      x: width / 2 - 100,
+      y,
+      size: 18,
+      font: boldFont,
     });
 
-    const page = await browser.newPage();
+    y -= 20;
 
-    // ✅ Set content
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-
-    // ✅ Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-
-      displayHeaderFooter: true,
-      footerTemplate: `
-        <div style="font-size:10px; text-align:center; width:100%;">
-          Page <span class="pageNumber"></span> of <span class="totalPages"></span>
-        </div>
-      `,
-      headerTemplate: `<div></div>`,
+    page.drawText(`From: ${formatDate(startDate)} | To: ${formatDate(endDate)}`, {
+      x: width / 2 - 150,
+      y,
+      size: 10,
+      font,
+      color: rgb(0.5, 0.5, 0.5),
     });
 
-    await browser.close();
+    y -= 30;
 
-    // ✅ Send response
+    const rowHeight = 25;
+    const colWidths = [60, 200, 250, 150];
+    const headers = ['S.No', 'Date', 'Source', 'Amount'];
+
+    const startX = 40;
+
+    // ===== DRAW HEADER FUNCTION =====
+    const drawHeader = () => {
+      let x = startX;
+
+      headers.forEach((h, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          color: rgb(0.2, 0.3, 0.4),
+        });
+
+        page.drawText(h, {
+          x: x + 5,
+          y: y + 8,
+          size: 10,
+          font: boldFont,
+          color: rgb(1, 1, 1),
+        });
+
+        x += colWidths[i];
+      });
+
+      y -= rowHeight;
+    };
+
+    drawHeader();
+
+    let total = 0;
+
+    // ===== ROWS =====
+    data.forEach((item, index) => {
+      // 🔥 PAGE BREAK
+      if (y < 60) {
+        page = pdfDoc.addPage([842, 595]);
+        ({ width, height } = page.getSize());
+        y = height - 40;
+
+        drawHeader(); // redraw header
+      }
+
+      const amt = Number(item.amount) || 0;
+      total += amt;
+
+      let x = startX;
+
+      const row = [index + 1, formatDate(item.date), item.source || 'N/A', formatCurrency(amt)];
+
+      row.forEach((cell, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          borderWidth: 0.5,
+          borderColor: rgb(0.8, 0.8, 0.8),
+        });
+
+        page.drawText(String(cell), {
+          x: x + 5,
+          y: y + 8,
+          size: 10,
+          font,
+          color: i === 3 ? rgb(0.8, 0, 0) : rgb(0, 0, 0), // 🔴 red
+        });
+
+        x += colWidths[i];
+      });
+
+      y -= rowHeight;
+    });
+
+    // ===== TOTAL =====
+    if (y < 60) {
+      page = pdfDoc.addPage([842, 595]);
+      y = height - 40;
+    }
+
+    let xTotal = startX;
+
+    const totalRow = ['', '', 'Total', formatCurrency(total)];
+
+    totalRow.forEach((cell, i) => {
+      page.drawRectangle({
+        x: xTotal,
+        y,
+        width: colWidths[i],
+        height: rowHeight,
+        color: rgb(0.9, 0.9, 0.9),
+      });
+
+      page.drawText(String(cell), {
+        x: xTotal + 5,
+        y: y + 8,
+        size: 10,
+        font: boldFont,
+      });
+
+      xTotal += colWidths[i];
+    });
+
+    const pdfBytes = await pdfDoc.save();
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=expense-report.pdf');
 
-    res.end(pdfBuffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to generate Expense PDF' });
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -238,176 +335,188 @@ export const GenerateTransactionPDF = async (
   { title, data = [], startDate, endDate, formatDate }
 ) => {
   try {
-    const formatCurrency = (amount) =>
-      new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-      }).format(amount || 0);
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+
+    const font = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Regular.ttf'))
+    );
+    const boldFont = await pdfDoc.embedFont(
+      fs.readFileSync(path.resolve('fonts/NotoSans-Bold.ttf'))
+    );
+
+    let page = pdfDoc.addPage([842, 595]);
+    let { width, height } = page.getSize();
+
+    const formatCurrency = (amt) =>
+      `₹${(amt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+    let y = height - 40;
+
+    // ===== TITLE =====
+    page.drawText(title || 'Transaction Report', {
+      x: width / 2 - 120,
+      y,
+      size: 18,
+      font: boldFont,
+    });
+
+    y -= 20;
+
+    page.drawText(`From: ${formatDate(startDate)} | To: ${formatDate(endDate)}`, {
+      x: width / 2 - 150,
+      y,
+      size: 10,
+      font,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+
+    y -= 30;
+
+    const rowHeight = 25;
+    const colWidths = [50, 120, 180, 100, 100, 120];
+    const headers = ['S.No', 'Date', 'Source', 'Income', 'Expense', 'Balance'];
+
+    const startX = 40;
+
+    // ===== DRAW HEADER FUNCTION =====
+    const drawHeader = () => {
+      let x = startX;
+
+      headers.forEach((h, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          color: rgb(0.2, 0.3, 0.4),
+        });
+
+        page.drawText(h, {
+          x: x + 5,
+          y: y + 8,
+          size: 10,
+          font: boldFont,
+          color: rgb(1, 1, 1),
+        });
+
+        x += colWidths[i];
+      });
+
+      y -= rowHeight;
+    };
+
+    drawHeader();
 
     let totalIncome = 0;
     let totalExpense = 0;
-    let runningBalance = 0;
+    let balance = 0;
 
-    const tableRows =
-      data.length === 0
-        ? `<tr><td colspan="6">No Transactions Found</td></tr>`
-        : data
-            .map((item, index) => {
-              const amount = Number(item.transactionAmount) || 0;
-              const isIncome = item.transactionType === 'income';
+    // ===== ROWS =====
+    data.forEach((item, index) => {
+      // 🔥 PAGE BREAK
+      if (y < 60) {
+        page = pdfDoc.addPage([842, 595]);
+        ({ width, height } = page.getSize());
+        y = height - 40;
 
-              if (isIncome) {
-                totalIncome += amount;
-                runningBalance += amount;
-              } else {
-                totalExpense += amount;
-                runningBalance -= amount;
-              }
+        drawHeader(); // redraw header on new page
+      }
 
-              return `
-                <tr>
-                  <td>${index + 1}</td>
-                  <td>${formatDate(item.transactionDate)}</td>
-                  <td>${item.source || 'N/A'}</td>
-                  <td class="income">
-                    ${isIncome ? formatCurrency(amount) : '-'}
-                  </td>
-                  <td class="expense">
-                    ${!isIncome ? formatCurrency(amount) : '-'}
-                  </td>
-                  <td class="balance">
-                    ${formatCurrency(runningBalance)}
-                  </td>
-                </tr>
-              `;
-            })
-            .join('');
+      const amt = Number(item.transactionAmount) || 0;
+      const isIncome = item.transactionType === 'income';
 
-    const totalBalance = totalIncome - totalExpense;
+      if (isIncome) {
+        totalIncome += amt;
+        balance += amt;
+      } else {
+        totalExpense += amt;
+        balance -= amt;
+      }
 
-    const html = `
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              color: #333;
-            }
+      let x = startX;
 
-            h1 {
-              text-align: center;
-              margin-bottom: 5px;
-            }
+      const row = [
+        index + 1,
+        formatDate(item.transactionDate),
+        item.source || 'N/A',
+        isIncome ? formatCurrency(amt) : '-',
+        !isIncome ? formatCurrency(amt) : '-',
+        formatCurrency(balance),
+      ];
 
-            .date-range {
-              text-align: center;
-              font-size: 12px;
-              margin-bottom: 20px;
-              color: gray;
-            }
+      row.forEach((cell, i) => {
+        page.drawRectangle({
+          x,
+          y,
+          width: colWidths[i],
+          height: rowHeight,
+          borderWidth: 0.5,
+          borderColor: rgb(0.8, 0.8, 0.8),
+        });
 
-            table {
-              width: 100%;
-              border-collapse: collapse;
-            }
+        let color = rgb(0, 0, 0);
+        if (i === 3 && isIncome) color = rgb(0, 0.6, 0);
+        if (i === 4 && !isIncome) color = rgb(0.8, 0, 0);
 
-            th, td {
-              border: 1px solid #ddd;
-              padding: 10px;
-              font-size: 12px;
-              text-align: center;
-            }
+        page.drawText(String(cell), {
+          x: x + 5,
+          y: y + 8,
+          size: 9,
+          font,
+          color,
+        });
 
-            th {
-              background-color: #2c3e50;
-              color: white;
-            }
+        x += colWidths[i];
+      });
 
-            tr:nth-child(even) {
-              background-color: #f9f9f9;
-            }
-
-            .income {
-              color: #27ae60;
-              font-weight: 600;
-              text-align: right;
-            }
-
-            .expense {
-              color: #c0392b;
-              font-weight: 600;
-              text-align: right;
-            }
-
-            .balance {
-              font-weight: bold;
-              text-align: right;
-            }
-
-            .total-row {
-              font-weight: bold;
-              background-color: #f1f1f1;
-            }
-          </style>
-        </head>
-
-        <body>
-          <h1>${title || 'Transaction Report'}</h1>
-
-          <div class="date-range">
-            From: ${startDate ? formatDate(startDate) : 'N/A'} |
-            To: ${endDate ? formatDate(endDate) : 'N/A'}
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Date</th>
-                <th>Source</th>
-                <th>Income</th>
-                <th>Expense</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              ${tableRows}
-
-              <tr class="total-row">
-                <td colspan="3">Total</td>
-                <td class="income">${formatCurrency(totalIncome)}</td>
-                <td class="expense">${formatCurrency(totalExpense)}</td>
-                <td class="balance">${formatCurrency(totalBalance)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      y -= rowHeight;
     });
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    // ===== TOTAL ROW =====
+    if (y < 60) {
+      page = pdfDoc.addPage([842, 595]);
+      y = height - 40;
+    }
 
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
+    let xTotal = startX;
+
+    const totalRow = [
+      '',
+      '',
+      'Total',
+      formatCurrency(totalIncome),
+      formatCurrency(totalExpense),
+      formatCurrency(totalIncome - totalExpense),
+    ];
+
+    totalRow.forEach((cell, i) => {
+      page.drawRectangle({
+        x: xTotal,
+        y,
+        width: colWidths[i],
+        height: rowHeight,
+        color: rgb(0.9, 0.9, 0.9),
+      });
+
+      page.drawText(String(cell), {
+        x: xTotal + 5,
+        y: y + 8,
+        size: 10,
+        font: boldFont,
+      });
+
+      xTotal += colWidths[i];
     });
 
-    await browser.close();
+    const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=transaction-report.pdf');
 
-    res.end(pdfBuffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to generate Transaction PDF' });
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 };

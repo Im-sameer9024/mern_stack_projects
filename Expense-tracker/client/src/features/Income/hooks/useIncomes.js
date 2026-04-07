@@ -128,6 +128,10 @@ export const useDownloadIncomePdf = () => {
   return useMutation({
     mutationFn: (params) => incomeApiOperations.DownloadPdfIncome(params),
     onSuccess: (data) => {
+      if (data.type !== 'application/pdf') {
+    toast.error('Failed to download PDF');
+    return;
+  }
       const url = window.URL.createObjectURL(data); // no need new Blob
 
       const link = document.createElement('a');
