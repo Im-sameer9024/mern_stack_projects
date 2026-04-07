@@ -27,7 +27,7 @@ app.use(
     //     callback(new Error("Not allowed by CORS"));
     //   }
     // },
-    origin: "https://expensesystemfinalvgu.vercel.app/", // for developmemnt
+    origin: "https://expensesystemfinalvgu.vercel.app", // for developmemnt
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
