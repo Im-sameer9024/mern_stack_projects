@@ -9,6 +9,7 @@ export const cookieOptions = {
   secure: true,
   sameSite: 'None', // should be strict in production or none or lax
   maxAge,
+  path:"/"
 };
 
 export const TransactionTypes = {
