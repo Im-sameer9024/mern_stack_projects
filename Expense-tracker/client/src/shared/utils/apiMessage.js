@@ -14,7 +14,7 @@ export const GetApiErrorMessage = (error) => {
     });
   }
 
-  return messages.join(" || ")
+  return messages.join(' || ');
 };
 
 export const GetApiResponseMessage = (response) => {

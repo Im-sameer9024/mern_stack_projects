@@ -1,10 +1,10 @@
-import CustomButton from '@/shared/components/custom/CustomButton'
-import InputField from '@/shared/components/custom/InputField'
-import ExpenseFormSkeleton from '@/shared/components/skeletons/ExpenseFormSkeleton'
-import React from 'react'
+import CustomButton from '@/shared/components/custom/CustomButton';
+import InputField from '@/shared/components/custom/InputField';
+import ExpenseFormSkeleton from '@/shared/components/skeletons/ExpenseFormSkeleton';
+import React from 'react';
 
 const UpdateExpenseForm = ({
-    control, // ✅ use control
+  control, // ✅ use control
   handleSubmit,
   errors,
   HandleUpdateExpense,
@@ -15,7 +15,7 @@ const UpdateExpenseForm = ({
   ExpenseIsError,
 }) => {
   return (
-     <>
+    <>
       {ExpenseIsError && ExpenseError?.message && (
         <p className="text-red-500 font-semibold text-sm">{ExpenseError.message}</p>
       )}
@@ -65,7 +65,7 @@ const UpdateExpenseForm = ({
         </form>
       )}
     </>
-  )
-}
+  );
+};
 
-export default UpdateExpenseForm
+export default UpdateExpenseForm;

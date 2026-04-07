@@ -5,6 +5,6 @@ import { DownloadTransactionPDF, GetAllTransactions } from './transaction.contro
 const route = express.Router();
 
 route.get('/get-all-transactions', auth, GetAllTransactions);
-route.get("/download-pdf",auth,DownloadTransactionPDF)
+route.get('/download-pdf', auth, DownloadTransactionPDF);
 
 export default route;

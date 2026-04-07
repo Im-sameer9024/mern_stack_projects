@@ -8,8 +8,6 @@ const Transactions = ({ data = [], total = {} }) => {
 
   const { totalIncome = 0, totalExpense = 0, totalBalance = 0 } = total;
 
-
-
   return (
     <div className="space-y-4">
       {/* ✅ Summary Section */}

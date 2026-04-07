@@ -7,12 +7,11 @@ export const useGetAllTransactions = ({ page, limit, sort, startDate, endDate })
   const temp = localStorage.getItem('temp');
 
   return useQuery({
-    queryKey: ['transactions', temp, page, limit, sort, startDate, endDate ],
+    queryKey: ['transactions', temp, page, limit, sort, startDate, endDate],
     queryFn: () =>
       transactionApiOperations.GetAllTransactions({ page, limit, sort, startDate, endDate }),
   });
 };
-
 
 export const useDownloadTransactionPdf = () => {
   return useMutation({
@@ -24,10 +23,8 @@ export const useDownloadTransactionPdf = () => {
       link.href = url;
       link.download = 'Transactions-report.pdf';
 
-     
       link.click();
       link.remove();
-
 
       window.URL.revokeObjectURL(url);
 

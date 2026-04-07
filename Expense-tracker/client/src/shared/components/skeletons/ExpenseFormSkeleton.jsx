@@ -1,5 +1,5 @@
-import React from 'react'
-import { Skeleton } from '../ui/skeleton'
+import React from 'react';
+import { Skeleton } from '../ui/skeleton';
 
 const ExpenseFormSkeleton = () => {
   return (
@@ -37,7 +37,7 @@ const ExpenseFormSkeleton = () => {
       {/* Button */}
       <Skeleton className="h-12 w-full rounded-lg" />
     </div>
-  )
-}
+  );
+};
 
-export default ExpenseFormSkeleton
+export default ExpenseFormSkeleton;

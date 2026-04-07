@@ -134,10 +134,8 @@ export const useDownloadIncomePdf = () => {
       link.href = url;
       link.download = 'income-report.pdf';
 
-     
       link.click();
       link.remove();
-
 
       window.URL.revokeObjectURL(url);
 

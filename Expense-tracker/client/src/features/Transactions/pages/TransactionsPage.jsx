@@ -34,10 +34,10 @@ const TransactionsPage = () => {
     isError: TransactionError,
   } = useGetAllTransactions(queryParams);
 
-  const{mutate: DownloadTransactionsPDF, isPending: DownloadTransactionsPDFPending} = useDownloadTransactionPdf();
+  const { mutate: DownloadTransactionsPDF, isPending: DownloadTransactionsPDFPending } =
+    useDownloadTransactionPdf();
 
   const TransactionsFinalData = TransactionsData?.data;
-
 
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
@@ -68,17 +68,21 @@ const TransactionsPage = () => {
             onReset={resetFilter}
           />
         }
-        content={<Transactions data={TransactionsFinalData?.allTransactions || []} total={TransactionsFinalData?.totalDetails[0]} />}
+        content={
+          <Transactions
+            data={TransactionsFinalData?.allTransactions || []}
+            total={TransactionsFinalData?.totalDetails[0]}
+          />
+        }
         errorMessage={TransactionErrorMessage?.message}
         isError={TransactionError}
         isLoading={TransactionPending}
         skeleton={<EntryRowSkeleton />}
         skeletonCount={5}
-
-         startDate={filters?.startDate}
-          endDate={filters?.endDate}
-          DownloadPDF={DownloadTransactionsPDF}
-          DownloadPDFPending={DownloadTransactionsPDFPending} 
+        startDate={filters?.startDate}
+        endDate={filters?.endDate}
+        DownloadPDF={DownloadTransactionsPDF}
+        DownloadPDFPending={DownloadTransactionsPDFPending}
       />
 
       {/* Pagination  */}

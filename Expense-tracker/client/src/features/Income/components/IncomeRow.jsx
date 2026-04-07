@@ -80,7 +80,6 @@ const IncomeRow = ({ rowData, path }) => {
     resolver: zodResolver(UpdateIncomeValidationSchema),
   });
 
-
   useEffect(() => {
     if (IncomeActualData) {
       reset({
@@ -100,7 +99,7 @@ const IncomeRow = ({ rowData, path }) => {
         amount: data?.amount,
       };
 
-      console.log(finalData)
+      console.log(finalData);
 
       await UpdateIncome(finalData);
 

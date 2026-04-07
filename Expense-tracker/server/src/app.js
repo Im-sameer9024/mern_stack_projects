@@ -12,10 +12,7 @@ import transactionRoute from './modules/transaction/transaction.route.js';
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "*"
-];
+const allowedOrigins = ['http://localhost:3000', '*'];
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -30,7 +27,7 @@ app.use(
     //     callback(new Error("Not allowed by CORS"));
     //   }
     // },
-    origin:true, // for developmemnt
+    origin: "https://expensesystemfinalvgu.vercel.app/", // for developmemnt
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

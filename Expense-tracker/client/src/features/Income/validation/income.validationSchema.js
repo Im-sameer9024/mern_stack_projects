@@ -27,7 +27,6 @@ const AddIncomeValidationSchema = z.object({
 });
 
 const UpdateIncomeValidationSchema = z.object({
-
   source: z
     .string()
     .min(1, { message: 'Source is required' })

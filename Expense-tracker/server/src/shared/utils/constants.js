@@ -6,8 +6,8 @@ const maxAge = ms(REFRESH_TOKEN_EXPIRES_IN);
 
 export const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // should be strict in production or none or lax
+  secure: true,
+  sameSite: 'None', // should be strict in production or none or lax
   maxAge,
 };
 

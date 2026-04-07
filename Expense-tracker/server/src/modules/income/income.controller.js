@@ -206,7 +206,7 @@ const GetAllIncome = async (req, res) => {
           totalPages: Math.ceil(total / limit),
         },
         chartData,
-        totalDetails
+        totalDetails,
       },
       'All incomes fetched successfully'
     );

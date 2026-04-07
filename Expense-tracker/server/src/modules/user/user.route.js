@@ -9,7 +9,11 @@ import {
   SignUp,
 } from './user.controller.js';
 import { validate } from '../../middlewares/validate.middleware.js';
-import { LoginValidationSchema, ResetPasswordValidationSchema, SignupValidationSchema } from './user.validationSchema.js';
+import {
+  LoginValidationSchema,
+  ResetPasswordValidationSchema,
+  SignupValidationSchema,
+} from './user.validationSchema.js';
 import { auth } from '../../middlewares/auth.middleware.js';
 
 const route = express.Router();

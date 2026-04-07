@@ -26,11 +26,11 @@ const transactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    
+
     source: {
       type: String,
       required: true,
-      trim:true
+      trim: true,
     },
   },
   {

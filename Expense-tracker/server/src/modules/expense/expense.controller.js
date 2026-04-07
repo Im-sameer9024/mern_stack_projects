@@ -139,7 +139,7 @@ const GetAllExpense = async (req, res) => {
       };
     }
 
-    const [expenses, total, chartData,totalDetails] = await Promise.all([
+    const [expenses, total, chartData, totalDetails] = await Promise.all([
       Expense.find(filter).sort(sortOption).skip(skip).limit(limit),
       Expense.countDocuments(filter),
       Expense.aggregate([
@@ -204,7 +204,7 @@ const GetAllExpense = async (req, res) => {
           limit,
           totalPages: Math.ceil(total / limit),
         },
-        totalDetails
+        totalDetails,
       },
       'All Expenses fetched successfully'
     );

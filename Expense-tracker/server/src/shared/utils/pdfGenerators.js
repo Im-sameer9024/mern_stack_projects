@@ -4,7 +4,6 @@ export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, 
   try {
     const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
 
-
     // ✅ HTML Template
     const html = `
       <html>
@@ -131,7 +130,7 @@ export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, 
 
 export const GenerateExpensePDF = async (res, { title, data, startDate, endDate, formatDate }) => {
   try {
-const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
+    const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
     // ✅ HTML Template
     const html = `
       <html>
@@ -266,7 +265,6 @@ const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
     res.status(500).json({ message: 'Failed to generate Expense PDF' });
   }
 };
-
 
 export const GenerateTransactionPDF = async (
   res,
@@ -438,10 +436,7 @@ export const GenerateTransactionPDF = async (
     await browser.close();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename=transaction-report.pdf'
-    );
+    res.setHeader('Content-Disposition', 'attachment; filename=transaction-report.pdf');
 
     res.end(pdfBuffer);
   } catch (error) {

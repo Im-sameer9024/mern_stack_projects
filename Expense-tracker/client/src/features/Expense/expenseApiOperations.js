@@ -37,7 +37,6 @@ export const expenseApiOperations = {
     return response.data;
   },
 
-  
   DeleteExpense: async (data) => {
     const response = await apiConnector({
       method: 'DELETE',
@@ -56,7 +55,6 @@ export const expenseApiOperations = {
     return response.data;
   },
 
-
   DownloadExpensePdf: async ({ startDate, endDate }) => {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
@@ -65,7 +63,7 @@ export const expenseApiOperations = {
     const response = await apiConnector({
       method: 'GET',
       url: expenseApiUrls.DOWNLOAD_EXPENSES_PDF(params.toString()),
-      responseType: "blob",
+      responseType: 'blob',
     });
 
     return response.data;

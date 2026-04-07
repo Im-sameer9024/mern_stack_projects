@@ -15,7 +15,7 @@ const AddIncomeForm = ({ CloseForm }) => {
     formState: { errors },
     reset,
   } = useForm({
-    resolver:zodResolver(AddIncomeValidationSchema),
+    resolver: zodResolver(AddIncomeValidationSchema),
     defaultValues: {
       source: '',
       amount: '',

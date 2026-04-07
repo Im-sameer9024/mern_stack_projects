@@ -57,7 +57,6 @@ const IncomePage = () => {
 
   const IncomesFinalData = IncomesData?.data;
 
-
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
       ...prev,

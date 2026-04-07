@@ -1,7 +1,7 @@
 import { apiConnector } from '@/services/apiConnector.js';
 import { transactionApiUrls } from '@/services/apiEndpoints.js';
 
-const { GET_ALL_TRANSACTIONS,DOWNLOAD_TRANSACTIONS_PDF } = transactionApiUrls;
+const { GET_ALL_TRANSACTIONS, DOWNLOAD_TRANSACTIONS_PDF } = transactionApiUrls;
 
 export const transactionApiOperations = {
   GetAllTransactions: async ({ page, limit, sort, startDate, endDate }) => {
@@ -20,19 +20,16 @@ export const transactionApiOperations = {
     return response.data;
   },
 
+  DownloadPdfTransaction: async ({ startDate, endDate }) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
 
-  DownloadPdfTransaction:async({startDate,endDate})=>{
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
-  
-      const response = await apiConnector({
-        method:"GET",
-        url:transactionApiUrls.DOWNLOAD_TRANSACTIONS_PDF(params.toString()),
-        responseType: "blob",
-      })
-      return response.data;
-    }
+    const response = await apiConnector({
+      method: 'GET',
+      url: transactionApiUrls.DOWNLOAD_TRANSACTIONS_PDF(params.toString()),
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
-
-

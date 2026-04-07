@@ -185,7 +185,7 @@ const ResetPasswordToken = async (req, res) => {
 
 const ResetPassword = async (req, res) => {
   try {
-    const { newPassword, confirmPassword, token } = req.validatedData
+    const { newPassword, confirmPassword, token } = req.validatedData;
 
     if (newPassword !== confirmPassword) {
       return ApiResponse(res, 400, null, 'New Password and Confirm Password do not match');

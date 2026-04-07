@@ -51,12 +51,8 @@ const ExpensePage = () => {
 
   const ExpenseFinalData = ExpenseData?.data;
 
-
-  const {
-    mutate: DownloadExpensePDF,
-    isPending: DownloadExpensePDFPending,
-  } = useDownloadExpensePdf();
-
+  const { mutate: DownloadExpensePDF, isPending: DownloadExpensePDFPending } =
+    useDownloadExpensePdf();
 
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
