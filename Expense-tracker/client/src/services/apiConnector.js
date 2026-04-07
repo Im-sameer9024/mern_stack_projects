@@ -12,13 +12,6 @@ export const axiosInstance = axios.create({
   },
 });
 
-//----------------- Refresh token axios instance---------------------
-
-const refreshInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
-
 //-----------------Queue Handling ---------------------------
 
 const MAX_QUEUE_SIZE = 20;
@@ -60,8 +53,7 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error?.config;
-    const setToken = useAuthStore.getState().setToken;
-    const clearToken = useAuthStore.getState().clearToken;
+    const { setToken, clearToken } = useAuthStore.getState();
 
     if (!originalRequest) {
       return Promise.reject(error);
@@ -100,7 +92,9 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await refreshInstance.get('/user/refresh-token');
+        const res = await axiosInstance.get('/user/refresh-token', {
+          __skipAuthRefresh: true,
+        });
         const newAccessToken = res?.data?.data?.accessToken;
 
         if (!newAccessToken) {

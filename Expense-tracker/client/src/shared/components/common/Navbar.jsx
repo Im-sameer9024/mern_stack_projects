@@ -68,7 +68,7 @@ const Navbar = () => {
           </SheetContent>
         </Sheet>
 
-        <h1 className="text-lg md:text-xl font-semibold text-slate-700">Expense Management</h1>
+        <h1 className="text-lg md:text-xl font-semibold text-slate-700">Expense Management System</h1>
       </div>
 
       {/* Right */}
