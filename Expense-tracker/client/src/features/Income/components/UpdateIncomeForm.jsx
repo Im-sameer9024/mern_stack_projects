@@ -16,12 +16,7 @@ const UpdateIncomeForm = ({
 }) => {
   return (
     <>
-      {IncomeIsError && IncomeError?.message && (
-        <p className="text-red-500 font-semibold text-sm">{IncomeError.message}</p>
-      )}
-
-      {IncomePending && <IncomeFormSkeleton />}
-
+      
       <form onSubmit={handleSubmit(HandleUpdateIncome)} className="space-y-4">
         <div>
           <h3 className="text-slate-600 font-semibold text-xl font-heading">Update Income</h3>

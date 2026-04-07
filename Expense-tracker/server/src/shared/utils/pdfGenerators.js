@@ -1,96 +1,62 @@
-import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, formatDate }) => {
   try {
-    const totalAmount = data.reduce((sum, item) => sum + item.amount, 0);
+    const safeData = Array.isArray(data) ? data : [];
 
-    // ✅ HTML Template
+    const totalAmount = safeData.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
     const html = `
       <html>
         <head>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              color: #333;
-            }
-
-            h1 {
-              text-align: center;
-              margin-bottom: 5px;
-            }
-
-            .date-range {
-              text-align: center;
-              font-size: 12px;
-              margin-bottom: 20px;
-              color: gray;
-            }
-
-            table {
-              width: 100%;
-              border-collapse: collapse;
-            }
-
-            th, td {
-              border: 1px solid #ddd;
-              padding: 10px;
-              text-align: center;
-            }
-
-            th {
-              background-color: #2c3e50;
-              color: white;
-            }
-
-            tr:nth-child(even) {
-              background-color: #f2f2f2;
-            }
-
-            .total-row {
-              font-weight: bold;
-              background-color: #eee;
-            }
-
-            .amount {
-              text-align: right;
-            }
+            body { font-family: Arial; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+            th { background: #2c3e50; color: white; }
+            .amount { text-align: right; }
           </style>
         </head>
-
         <body>
           <h1>${title || 'Income Report'}</h1>
-          <div class="date-range">
-            From: ${formatDate(startDate)} | To: ${formatDate(endDate)}
-          </div>
+
+          <p>
+            From: ${startDate ? formatDate(startDate) : 'N/A'} |
+            To: ${endDate ? formatDate(endDate) : 'N/A'}
+          </p>
 
           <table>
             <thead>
               <tr>
-                <th>S.No</th>
+                <th>#</th>
                 <th>Date</th>
                 <th>Source</th>
-                <th>Amount (₹)</th>
+                <th>Amount</th>
               </tr>
             </thead>
 
             <tbody>
-              ${data
-                .map(
-                  (item, index) => `
-                  <tr>
-                    <td>${index + 1}</td>
-                    <td>${formatDate(item.date)}</td>
-                    <td>${item.source || 'N/A'}</td>
-                    <td class="amount">₹ ${item.amount.toFixed(2)}</td>
-                  </tr>
-                `
-                )
-                .join('')}
+              ${
+                safeData.length === 0
+                  ? `<tr><td colspan="4">No Data</td></tr>`
+                  : safeData
+                      .map(
+                        (item, i) => `
+                        <tr>
+                          <td>${i + 1}</td>
+                          <td>${item.date ? formatDate(item.date) : 'N/A'}</td>
+                          <td>${item.source || 'N/A'}</td>
+                          <td class="amount">₹ ${(Number(item.amount) || 0).toFixed(2)}</td>
+                        </tr>
+                      `
+                      )
+                      .join('')
+              }
 
-              <tr class="total-row">
-                <td colspan="3">Total</td>
-                <td class="amount">₹ ${totalAmount.toFixed(2)}</td>
+              <tr>
+                <td colspan="3"><b>Total</b></td>
+                <td class="amount"><b>₹ ${totalAmount.toFixed(2)}</b></td>
               </tr>
             </tbody>
           </table>
@@ -98,18 +64,20 @@ export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, 
       </html>
     `;
 
-    // ✅ Launch browser
+    // 🔥 Render-compatible browser
     const browser = await puppeteer.launch({
-      headless: 'new', // important for Node 20+
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // for production servers
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
 
-    // ✅ Load HTML
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    await page.setContent(html, {
+      waitUntil: 'networkidle0',
+      timeout: 30000,
+    });
 
-    // ✅ Generate PDF
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -117,14 +85,13 @@ export const GenerateIncomePDF = async (res, { title, data, startDate, endDate, 
 
     await browser.close();
 
-    // ✅ Send response
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=income-report.pdf');
 
     res.end(pdfBuffer);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to generate PDF' });
+    console.error('PDF ERROR:', error); // 🔥 IMPORTANT
+    res.status(500).json({ message: error.message });
   }
 };
 

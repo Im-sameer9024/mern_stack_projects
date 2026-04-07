@@ -3,7 +3,7 @@ import { Skeleton } from '../ui/skeleton';
 
 const IncomeFormSkeleton = () => {
   return (
-    <div className="p-6 bg-white rounded-lg w-full max-w-md space-y-6">
+    <div className="p-6 bg-white rounded-lg w-full  space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-6 w-40" />
