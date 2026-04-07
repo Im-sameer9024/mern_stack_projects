@@ -20,6 +20,8 @@ export const useLoginUser = () => {
       toast.success(GetApiResponseMessage(data));
     },
     onError: (error) => {
+
+      console.log(error)
       toast.error(GetApiErrorMessage(error));
     },
   });

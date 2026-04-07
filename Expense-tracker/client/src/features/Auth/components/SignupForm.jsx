@@ -1,9 +1,6 @@
 import CustomButton from '@/shared/components/custom/CustomButton';
 import InputField from '@/shared/components/custom/InputField';
-import {
-  SignupTest,
-  SignupValidationSchema,
-} from '@/features/Auth/validation/auth.validationSchema';
+import { SignupValidationSchema } from '@/features/Auth/validation/auth.validationSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,7 +14,7 @@ const SignupForm = () => {
     formState: { errors },
     handleSubmit,
   } = useForm({
-    resolver: zodResolver(SignupTest),
+    resolver: zodResolver(SignupValidationSchema),
     defaultValues: {
       name: '',
       email: '',

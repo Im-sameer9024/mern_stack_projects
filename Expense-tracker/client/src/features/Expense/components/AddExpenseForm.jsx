@@ -5,6 +5,8 @@ import { GetApiErrorMessage } from '@/shared/utils/apiMessage';
 import { toast } from 'sonner';
 import InputField from '@/shared/components/custom/InputField';
 import CustomButton from '@/shared/components/custom/CustomButton';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AddExpenseValidationSchema } from '../validation/expense.validationSchema';
 
 const AddExpenseForm = ({ CloseForm }) => {
   const {
@@ -13,6 +15,7 @@ const AddExpenseForm = ({ CloseForm }) => {
     formState: { errors },
     reset,
   } = useForm({
+    resolver: zodResolver(AddExpenseValidationSchema),
     defaultValues: {
       source: '',
       amount: '',
@@ -67,6 +70,7 @@ const AddExpenseForm = ({ CloseForm }) => {
         placeholder={'13-03-2026'}
         type={'date'}
         name={'date'}
+        max={new Date().toISOString().split('T')[0]}
         error={errors.date}
         loading={AddExpensePending}
         control={control}

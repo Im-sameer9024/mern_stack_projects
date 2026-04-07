@@ -10,9 +10,10 @@ import crypto from 'crypto';
 import { resetPasswordEmailTemplate } from '../../shared/mail-templates/resetPasswordEmailTemplate .js';
 import { passwordResetSuccessTemplate } from '../../shared/mail-templates/passwordResetSuccessTemplate .js';
 import { registerEmailTemplate } from '../../shared/mail-templates/registerEmailTemplate.js';
+
 const SignUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.validatedData;
 
     const user = await User.findOne({
       email: email,
@@ -44,7 +45,7 @@ const SignUp = async (req, res) => {
 
 const LogIn = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.validatedData;
 
     const user = await User.findOne({
       email: email,
@@ -151,6 +152,10 @@ const ResetPasswordToken = async (req, res) => {
   try {
     const { email } = req.body;
 
+    if (!email) {
+      return ApiResponse(res, 400, null, 'Email is required');
+    }
+
     const user = await User.findOne({
       email: email,
     });
@@ -180,7 +185,7 @@ const ResetPasswordToken = async (req, res) => {
 
 const ResetPassword = async (req, res) => {
   try {
-    const { newPassword, confirmPassword, token } = req.body;
+    const { newPassword, confirmPassword, token } = req.validatedData
 
     if (newPassword !== confirmPassword) {
       return ApiResponse(res, 400, null, 'New Password and Confirm Password do not match');

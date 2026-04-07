@@ -26,17 +26,21 @@ const transactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    icon: {
-      type: String,
-    },
+    
     source: {
       type: String,
+      required: true,
+      trim:true
     },
   },
   {
     timestamps: true,
   }
 );
+
+transactionSchema.index({ userId: 1, transactionDate: -1 });
+transactionSchema.index({ userId: 1, transactionType: 1 });
+transactionSchema.index({ userId: 1, source: 1 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 

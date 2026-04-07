@@ -5,6 +5,8 @@ import InputField from '@/shared/components/custom/InputField';
 import CustomButton from '@/shared/components/custom/CustomButton';
 import { toast } from 'sonner';
 import { GetApiErrorMessage, GetApiResponseMessage } from '@/shared/utils/apiMessage';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AddIncomeValidationSchema } from '../validation/income.validationSchema';
 
 const AddIncomeForm = ({ CloseForm }) => {
   const {
@@ -13,6 +15,7 @@ const AddIncomeForm = ({ CloseForm }) => {
     formState: { errors },
     reset,
   } = useForm({
+    resolver:zodResolver(AddIncomeValidationSchema),
     defaultValues: {
       source: '',
       amount: '',
@@ -68,6 +71,7 @@ const AddIncomeForm = ({ CloseForm }) => {
         placeholder={'13-03-2026'}
         type={'date'}
         name={'date'}
+        max={new Date().toISOString().split('T')[0]}
         error={errors.date}
         loading={AddIncomePending}
         control={control}

@@ -1,6 +1,6 @@
 import z from 'zod';
 
-const AddIncomeValidationSchema = z.object({
+const AddExpenseValidationSchema = z.object({
   source: z
     .string()
     .min(1, { message: 'Source is required' })
@@ -26,9 +26,7 @@ const AddIncomeValidationSchema = z.object({
     .transform((val) => new Date(val)),
 });
 
-const UpdateIncomeValidationSchema = z.object({
-  incomeId: z.string().min(1, { message: 'IncomeId is required' }),
-
+const UpdateExpenseValidationSchema = z.object({
   source: z
     .string()
     .min(1, { message: 'Source is required' })
@@ -37,7 +35,7 @@ const UpdateIncomeValidationSchema = z.object({
     })
     .trim(),
 
-  amount: z
+  amount: z.coerce
     .number({
       required_error: 'Amount is required',
       invalid_type_error: 'Amount must be a number',
@@ -54,4 +52,4 @@ const UpdateIncomeValidationSchema = z.object({
     .transform((val) => new Date(val)),
 });
 
-export { AddIncomeValidationSchema, UpdateIncomeValidationSchema };
+export { AddExpenseValidationSchema, UpdateExpenseValidationSchema };

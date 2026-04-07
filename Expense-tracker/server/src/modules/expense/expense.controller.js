@@ -17,7 +17,7 @@ const AddExpense = async (req, res) => {
       userId,
       source,
       amount,
-      date: new Date(date),
+      date: date,
     });
 
     //------------- Create transaction ------------
@@ -94,8 +94,8 @@ const GetAllExpense = async (req, res) => {
 
     if (startDate && endDate) {
       filter.date = {
-        $gte: startDate,
-        $lte: endDate,
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
       };
     }
 
@@ -128,7 +128,18 @@ const GetAllExpense = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const [expenses, total, chartData] = await Promise.all([
+    const matchStage = {
+      userId: new mongoose.Types.ObjectId(id), // 👈 filter by logged-in user
+    };
+
+    if (startDate && endDate) {
+      matchStage.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    const [expenses, total, chartData,totalDetails] = await Promise.all([
       Expense.find(filter).sort(sortOption).skip(skip).limit(limit),
       Expense.countDocuments(filter),
       Expense.aggregate([
@@ -159,6 +170,26 @@ const GetAllExpense = async (req, res) => {
           },
         },
       ]),
+      Expense.aggregate([
+        {
+          $match: matchStage,
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalExpense: {
+              $sum: '$amount',
+            },
+          },
+        },
+
+        {
+          $project: {
+            _id: 0,
+            totalExpense: 1,
+          },
+        },
+      ]),
     ]);
 
     return ApiResponse(
@@ -173,6 +204,7 @@ const GetAllExpense = async (req, res) => {
           limit,
           totalPages: Math.ceil(total / limit),
         },
+        totalDetails
       },
       'All Expenses fetched successfully'
     );
@@ -274,7 +306,7 @@ const DownloadExpense = async (req, res) => {
 
     const expenses = await Expense.find(filter)
       .sort({
-        date: -1,
+        date: 1,
       })
       .select('source amount date');
 
@@ -292,4 +324,12 @@ const DownloadExpense = async (req, res) => {
   }
 };
 
-export { AddExpense, GetAllExpense,GetSingleExpense, DeleteExpense, DownloadExpense, EditExpense, DeleteAllExpense };
+export {
+  AddExpense,
+  GetAllExpense,
+  GetSingleExpense,
+  DeleteExpense,
+  DownloadExpense,
+  EditExpense,
+  DeleteAllExpense,
+};

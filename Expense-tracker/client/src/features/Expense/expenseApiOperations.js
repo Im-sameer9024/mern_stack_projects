@@ -63,8 +63,9 @@ export const expenseApiOperations = {
     if (endDate) params.append('endDate', endDate);
 
     const response = await apiConnector({
-      method: 'POST',
+      method: 'GET',
       url: expenseApiUrls.DOWNLOAD_EXPENSES_PDF(params.toString()),
+      responseType: "blob",
     });
 
     return response.data;

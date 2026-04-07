@@ -14,6 +14,7 @@ export default defineConfig({
       open: true, // auto open browser
       gzipSize: true,
       brotliSize: true,
+      filename: "dist/stats.html",
     }),
     babel({ presets: [reactCompilerPreset()] }),
   ],
@@ -25,4 +26,5 @@ export default defineConfig({
   server: {
     host: true,
   },
+  
 });

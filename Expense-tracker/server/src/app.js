@@ -8,7 +8,6 @@ import morgan from 'morgan';
 import userRoute from './modules/user/user.route.js';
 import incomeRoute from './modules/income/income.route.js';
 import expenseRoute from './modules/expense/expense.route.js';
-import dashboardRoute from './modules/dashboard.route.js';
 import transactionRoute from './modules/transaction/transaction.route.js';
 
 const app = express();
@@ -43,7 +42,6 @@ app.use(
 app.use('/api/v1/user', userRoute);
 app.use('/api/v1/income', incomeRoute);
 app.use('/api/v1/expense', expenseRoute);
-app.use('/api/v1/dashboard', dashboardRoute);
 app.use('/api/v1/transactions', transactionRoute);
 
 app.get('/', (req, res) => {

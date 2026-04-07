@@ -10,14 +10,28 @@ const DataWrapper = ({
   isLoading,
   skeleton,
   skeletonCount = 4,
-  DownloadIncomePDF
+  DownloadPDF,
+  DownloadPDFPending,
+  startDate,
+  endDate,
 }) => {
   return (
     <div className=" ">
       {/* header section  */}
       <div className="flex items-center justify-between">
         <h2 className="text-slate-600 font-semibold text-xl font-heading">{title}</h2>
-        <CustomButton onClick={DownloadIncomePDF} leftIcon={<MdOutlineFileDownload />}>Download</CustomButton>
+        <CustomButton
+          onClick={() => {
+            DownloadPDF({
+              startDate,
+              endDate,
+            });
+          }}
+          loading={DownloadPDFPending}
+          leftIcon={<MdOutlineFileDownload />}
+        >
+          Download
+        </CustomButton>
       </div>
 
       {/*------------ filter section ------------ */}

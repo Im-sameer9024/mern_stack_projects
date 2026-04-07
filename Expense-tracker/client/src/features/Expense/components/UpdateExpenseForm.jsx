@@ -53,6 +53,7 @@ const UpdateExpenseForm = ({
             label="Date"
             name="date"
             type="date"
+            max={new Date().toISOString().split('T')[0]}
             error={errors.date}
             loading={isUpdating}
             control={control}

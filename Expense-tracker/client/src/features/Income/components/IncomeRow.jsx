@@ -6,6 +6,8 @@ import { LuTrendingUp } from 'react-icons/lu';
 import UpdateIncomeForm from './UpdateIncomeForm';
 import { useDeleteIncome, useGetSingleIncome, useUpdateIncome } from '../hooks/useIncomes';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { UpdateIncomeValidationSchema } from '../validation/income.validationSchema';
 
 const Modal = lazy(() => import('@/shared/components/custom/Modal'));
 
@@ -74,7 +76,10 @@ const IncomeRow = ({ rowData, path }) => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm({
+    resolver: zodResolver(UpdateIncomeValidationSchema),
+  });
+
 
   useEffect(() => {
     if (IncomeActualData) {
@@ -94,6 +99,8 @@ const IncomeRow = ({ rowData, path }) => {
         source: data?.source,
         amount: data?.amount,
       };
+
+      console.log(finalData)
 
       await UpdateIncome(finalData);
 

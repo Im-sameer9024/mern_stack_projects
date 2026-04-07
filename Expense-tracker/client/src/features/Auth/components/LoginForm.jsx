@@ -3,19 +3,20 @@ import InputField from '@/shared/components/custom/InputField';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoginTest, LoginValidationSchema } from '@/features/Auth/validation/auth.validationSchema';
+import {  LoginValidationSchema } from '@/features/Auth/validation/auth.validationSchema';
 import { useLoginUser } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
-  const { mutateAsync: LoginUser, isPending: isLoginUserLoading } = useLoginUser();
+  const { mutateAsync: LoginUser, isPending: isLoginUserLoading,} = useLoginUser();
+
 
   const {
     control,
     formState: { errors },
     handleSubmit,
   } = useForm({
-    resolver: zodResolver(LoginTest),
+    resolver: zodResolver(LoginValidationSchema),
     defaultValues: {
       email: '',
       password: '',

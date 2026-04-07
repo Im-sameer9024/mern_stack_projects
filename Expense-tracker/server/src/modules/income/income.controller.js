@@ -128,9 +128,20 @@ const GetAllIncome = async (req, res) => {
 
     let skip = (page - 1) * limit;
 
+    const matchStage = {
+      userId: new mongoose.Types.ObjectId(id), // 👈 filter by logged-in user
+    };
+
+    if (startDate && endDate) {
+      matchStage.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
     //----- parallel queries ---------
 
-    const [incomes, total, chartData] = await Promise.all([
+    const [incomes, total, chartData, totalDetails] = await Promise.all([
       Income.find(filter).sort(sortOption).skip(skip).limit(limit),
       Income.countDocuments(filter),
       Income.aggregate([
@@ -161,6 +172,26 @@ const GetAllIncome = async (req, res) => {
           },
         },
       ]),
+      Income.aggregate([
+        {
+          $match: matchStage,
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalIncome: {
+              $sum: '$amount',
+            },
+          },
+        },
+
+        {
+          $project: {
+            _id: 0,
+            totalIncome: 1,
+          },
+        },
+      ]),
     ]);
 
     return ApiResponse(
@@ -175,6 +206,7 @@ const GetAllIncome = async (req, res) => {
           totalPages: Math.ceil(total / limit),
         },
         chartData,
+        totalDetails
       },
       'All incomes fetched successfully'
     );
@@ -271,16 +303,16 @@ const DownloadIncome = async (req, res) => {
       $lte: new Date(endDate),
     };
 
-    console.log(startDate, endDate, filter);
-
     // Fetch income data based on filter
     const incomes = await Income.find(filter).sort({
       date: 1,
     });
 
-    //--------- create pdf ---------
+    if (!incomes) {
+      return ApiResponse(res, 404, null, 'No incomes found');
+    }
 
-    console.log('Incomes is here', incomes);
+    //--------- create pdf ---------
 
     return GenerateIncomePDF(res, {
       title: 'Income_Report',

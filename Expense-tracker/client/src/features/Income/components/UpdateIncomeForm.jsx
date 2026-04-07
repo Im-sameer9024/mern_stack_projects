@@ -9,7 +9,7 @@ const UpdateIncomeForm = ({
   errors,
   HandleUpdateIncome,
   isUpdating,
-  IncomeData,
+  // IncomeData,
   IncomePending,
   IncomeError,
   IncomeIsError,
@@ -22,47 +22,56 @@ const UpdateIncomeForm = ({
 
       {IncomePending && <IncomeFormSkeleton />}
 
-      {!IncomeError && !IncomePending && IncomeData && (
-        <form onSubmit={handleSubmit(HandleUpdateIncome)} className="space-y-4">
-          <div>
-            <h3 className="text-slate-600 font-semibold text-xl font-heading">Update Income</h3>
-            <hr className="border-slate-600" />
-          </div>
+      <form onSubmit={handleSubmit(HandleUpdateIncome)} className="space-y-4">
+        <div>
+          <h3 className="text-slate-600 font-semibold text-xl font-heading">Update Income</h3>
+          <hr className="border-slate-600" />
+        </div>
 
-          <InputField
-            label="Income Source"
-            name="source"
-            type="text"
-            placeholder="salary"
-            error={errors.source}
-            loading={isUpdating}
-            control={control}
-          />
+        {IncomeIsError && IncomeError?.message && (
+          <p className="text-red-500 font-semibold text-sm">{IncomeError.message}</p>
+        )}
 
-          <InputField
-            label="Amount"
-            name="amount"
-            type="number"
-            placeholder="10000"
-            error={errors.amount}
-            loading={isUpdating}
-            control={control}
-          />
+        {IncomePending ? (
+          <IncomeFormSkeleton />
+        ) : (
+          <>
+            <InputField
+              label="Income Source"
+              name="source"
+              type="text"
+              placeholder="salary"
+              error={errors.source}
+              loading={isUpdating}
+              control={control}
+            />
 
-          <InputField
-            label="Date"
-            name="date"
-            type="date"
-            error={errors.date}
-            loading={isUpdating}
-            control={control}
-          />
+            <InputField
+              label="Amount"
+              name="amount"
+              type="number"
+              placeholder="10000"
+              error={errors.amount}
+              loading={isUpdating}
+              control={control}
+            />
 
-          <CustomButton fullWidth type="submit" active loading={isUpdating} className="mt-4">
-            Update Income
-          </CustomButton>
-        </form>
-      )}
+            <InputField
+              label="Date"
+              name="date"
+              type="date"
+              max={new Date().toISOString().split('T')[0]}
+              error={errors.date}
+              loading={isUpdating}
+              control={control}
+            />
+          </>
+        )}
+
+        <CustomButton fullWidth type="submit" active loading={isUpdating} className="mt-4">
+          Update Income
+        </CustomButton>
+      </form>
     </>
   );
 };

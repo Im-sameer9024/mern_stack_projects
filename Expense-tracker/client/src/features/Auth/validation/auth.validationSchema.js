@@ -13,14 +13,6 @@ const LoginValidationSchema = z.object({
     }),
 });
 
-const LoginTest = z.object({
-  email: z.email({ message: 'Email is not valid' }),
-  password: z
-    .string()
-    .min(6, { message: 'Password must be at least 6 char' })
-    .max(18, { message: 'Password must be at most 18 char' }),
-});
-
 const SignupValidationSchema = z.object({
   name: z
     .string()
@@ -41,26 +33,8 @@ const SignupValidationSchema = z.object({
     }),
 });
 
-const SignupTest = z.object({
-  name: z
-    .string()
-    .min(3, { message: 'Name must be at least 3 char' })
-    .max(25, { message: 'Name must be at most 25 char' }),
-  email: z.email({ message: 'Email is not valid' }),
-  password: z
-    .string()
-    .min(6, { message: 'Password must be at least 6 char' })
-    .max(18, { message: 'Password must be at most 18 char' }),
-});
-
 const forgotPasswordEmailValidationSchema = z.object({
   email: z.email({ message: 'Email is not valid' }),
 });
 
-export {
-  LoginValidationSchema,
-  forgotPasswordEmailValidationSchema,
-  SignupValidationSchema,
-  SignupTest,
-  LoginTest,
-};
+export { LoginValidationSchema, forgotPasswordEmailValidationSchema, SignupValidationSchema };

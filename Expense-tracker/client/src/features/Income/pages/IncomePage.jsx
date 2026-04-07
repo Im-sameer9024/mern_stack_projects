@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useDownloadIncomePdf, useGetAllIncomes } from '../hooks/useIncomes';
 import DataWrapper from '@/features/DataWrapper';
 import FilterSection from '@/features/FilterSection';
@@ -34,32 +34,35 @@ const IncomePage = () => {
     endDate: null,
   });
 
+  const queryParams = useMemo(
+    () => ({
+      page: filters.page,
+      limit: filters.limit,
+      sort: filters.sort,
+      source: filters.source,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+    }),
+    [filters]
+  );
+
   const {
     data: IncomesData,
     isPending: IncomesPending,
     error: IncomesErrorMessage,
     isError: IncomesError,
-  } = useGetAllIncomes({
-    page: filters?.page,
-    limit: filters?.limit,
-    sort: filters?.sort,
-    source: filters?.source,
-    startDate: filters?.startDate,
-    endDate: filters?.endDate,
-  });
+  } = useGetAllIncomes(queryParams);
 
-  const { mutate: DownloadIncomePDF, isPending: DownloadIncomePDFPending } = useDownloadIncomePdf({
-    startDate: filters?.startDate,
-    endDate: filters?.endDate,
-  });
+  const { mutate: DownloadIncomePDF, isPending: DownloadIncomePDFPending } = useDownloadIncomePdf();
 
-  const IncomesFinalDate = IncomesData?.data;
+  const IncomesFinalData = IncomesData?.data;
+
 
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      // page:1
+      page: 1,
     }));
   };
 
@@ -83,7 +86,7 @@ const IncomePage = () => {
         isLoading={IncomesPending}
         skeleton={<BarChartSkeleton />}
         skeletonCount={1}
-        content={<CustomBarChart apiData={IncomesFinalDate?.chartData} />}
+        content={<CustomBarChart apiData={IncomesFinalData?.chartData} />}
       />
 
       <div className="bg-white rounded p-4">
@@ -97,8 +100,10 @@ const IncomePage = () => {
               onReset={resetFilter}
             />
           }
-
-          DownloadIncomePDF={DownloadIncomePDF}
+          startDate={filters?.startDate}
+          endDate={filters?.endDate}
+          DownloadPDF={DownloadIncomePDF}
+          DownloadPDFPending={DownloadIncomePDFPending}
           //----------- show contents of data -----------
           content={
             <Incomes
@@ -106,7 +111,8 @@ const IncomePage = () => {
               AddIncomeForm={<AddIncomeForm CloseForm={CloseForm} />}
               CloseForm={CloseForm}
               OpenForm={OpenForm}
-              data={IncomesFinalDate?.incomes || []}
+              data={IncomesFinalData?.incomes || []}
+              total={IncomesFinalData?.totalDetails[0]?.totalIncome || 0}
             />
           }
           errorMessage={IncomesErrorMessage?.message}
@@ -119,7 +125,7 @@ const IncomePage = () => {
 
         {/* Pagination  */}
         <CustomPagination
-          pagination={IncomesFinalDate?.pagination}
+          pagination={IncomesFinalData?.pagination}
           onPageChange={(page) =>
             setFilters((prev) => ({
               ...prev,

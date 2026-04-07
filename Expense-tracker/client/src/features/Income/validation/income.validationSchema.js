@@ -27,7 +27,6 @@ const AddIncomeValidationSchema = z.object({
 });
 
 const UpdateIncomeValidationSchema = z.object({
-  incomeId: z.string().min(1, { message: 'IncomeId is required' }),
 
   source: z
     .string()
@@ -37,7 +36,7 @@ const UpdateIncomeValidationSchema = z.object({
     })
     .trim(),
 
-  amount: z
+  amount: z.coerce
     .number({
       required_error: 'Amount is required',
       invalid_type_error: 'Amount must be a number',

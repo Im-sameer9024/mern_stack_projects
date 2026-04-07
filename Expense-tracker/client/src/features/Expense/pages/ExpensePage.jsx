@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useGetAllExpense } from '../hooks/useExpense';
+import React, { useMemo, useState } from 'react';
+import { useDownloadExpensePdf, useGetAllExpense } from '../hooks/useExpense';
 import DataWrapper from '@/features/DataWrapper';
 import FilterSection from '@/features/FilterSection';
 import Expenses from '../components/Expenses';
@@ -30,27 +30,39 @@ const ExpensePage = () => {
     endDate: null,
   });
 
+  const queryParams = useMemo(
+    () => ({
+      page: filters.page,
+      limit: filters.limit,
+      sort: filters.sort,
+      source: filters.source,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+    }),
+    [filters]
+  );
+
   const {
     data: ExpenseData,
     isPending: ExpensePending,
     error: ExpenseErrorMessage,
     isError: ExpenseError,
-  } = useGetAllExpense({
-    page: filters?.page,
-    limit: filters?.limit,
-    sort: filters?.sort,
-    category: filters?.category,
-    startDate: filters?.startDate,
-    endDate: filters?.endDate,
-  });
+  } = useGetAllExpense(queryParams);
 
-  const ExpenseFinalDate = ExpenseData?.data;
+  const ExpenseFinalData = ExpenseData?.data;
+
+
+  const {
+    mutate: DownloadExpensePDF,
+    isPending: DownloadExpensePDFPending,
+  } = useDownloadExpensePdf();
+
 
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      // page:1
+      page: 1,
     }));
   };
 
@@ -74,7 +86,7 @@ const ExpensePage = () => {
         isLoading={ExpensePending}
         skeleton={<BarChartSkeleton />}
         skeletonCount={1}
-        content={<CustomBarChart apiData={ExpenseFinalDate?.chartData} />}
+        content={<CustomBarChart apiData={ExpenseFinalData?.chartData} />}
       />
       <div className="bg-white rounded p-4">
         <DataWrapper
@@ -86,13 +98,18 @@ const ExpensePage = () => {
               onReset={resetFilter}
             />
           }
+          DownloadPDF={DownloadExpensePDF}
+          DownloadPDFPending={DownloadExpensePDFPending}
+          startDate={filters?.startDate}
+          endDate={filters.endDate}
           content={
             <Expenses
               showExpenseForm={showExpenseForm}
               AddExpenseForm={<AddExpenseForm CloseForm={CloseForm} />}
               CloseForm={CloseForm}
               OpenForm={OpenForm}
-              data={ExpenseFinalDate?.expenses || []}
+              data={ExpenseFinalData?.expenses || []}
+              total={ExpenseFinalData?.totalDetails[0]?.totalExpense || 0}
             />
           }
           errorMessage={ExpenseErrorMessage?.message}
@@ -104,7 +121,7 @@ const ExpensePage = () => {
 
         {/* Pagination  */}
         <CustomPagination
-          pagination={ExpenseFinalDate?.pagination}
+          pagination={ExpenseFinalData?.pagination}
           onPageChange={(page) =>
             setFilters((prev) => ({
               ...prev,

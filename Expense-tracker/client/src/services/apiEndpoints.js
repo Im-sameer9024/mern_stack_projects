@@ -14,7 +14,7 @@ export const expenseApiUrls = {
   DELETE_EXPENSE: '/expense/delete',
   GET_SINGLE_EXPENSE: (expenseId) => `/expense/get-single-expense/${expenseId}`,
   GET_ALL_EXPENSES: (params) => `/expense/get-all-expenses?${params}`,
-  DOWNLOAD_EXPENSES_PDF: '/expense/download-pdf',
+  DOWNLOAD_EXPENSES_PDF: (params) => `/expense/download-pdf?${params}`,
   DELETE_ALL_EXPENSES: '/expense/delete-all-expenses',
 };
 
@@ -22,7 +22,7 @@ export const incomeApiUrls = {
   ADD_INCOME: '/income/add',
   DELETE_INCOME: '/income/delete',
   GET_ALL_INCOMES: (params) => `/income/get-all-incomes?${params}`,
-  DOWNLOAD_INCOMES_PDF: (params) => `/income/download-pdf/${params}`,
+  DOWNLOAD_INCOMES_PDF: (params) => `/income/download-pdf?${params}`,
   DELETE_ALL_INCOMES: '/income/delete-all-incomes',
   UPDATE_INCOME: '/income/update-income',
   GET_SINGLE_INCOME: (incomeId) => `/income/get-single-income/${incomeId}`,
@@ -34,4 +34,5 @@ export const dashboardApiUrl = {
 
 export const transactionApiUrls = {
   GET_ALL_TRANSACTIONS: (params) => `/transactions/get-all-transactions?${params}`,
+  DOWNLOAD_TRANSACTIONS_PDF: (params) => `/transactions/download-pdf?${params}`,
 };

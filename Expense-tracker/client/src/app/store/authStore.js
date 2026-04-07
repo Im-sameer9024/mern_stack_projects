@@ -8,6 +8,9 @@ export const useAuthStore = create(
       token: null,
       tokenLoading: true,
       forgotPasswordToken: null,
+      getUserKey: () => {
+        return localStorage.getItem('temp') ? localStorage.getItem('temp') : null;
+      },
 
       //---------------- helper functions--------------------
       setToken: (token) => set({ token: token, tokenLoading: false }, false, 'auth/setToken'),

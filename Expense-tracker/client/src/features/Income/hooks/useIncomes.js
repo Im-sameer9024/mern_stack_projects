@@ -3,9 +3,11 @@ import { incomeApiOperations } from '../incomeApiOperations';
 import queryClient from '@/shared/utils/reactQuery';
 import { toast } from 'sonner';
 import { GetApiErrorMessage, GetApiResponseMessage } from '@/shared/utils/apiMessage';
+import { useAuthStore } from '@/app/store/authStore';
 
 export const useAddIncome = () => {
-  const temp = localStorage.getItem('temp');
+  // key from the backend and store in localStorage and get by zustand
+  const temp = useAuthStore((state) => state.getUserKey());
   return useMutation({
     mutationFn: incomeApiOperations.AddIncome,
     onSuccess: (data) => {
@@ -17,6 +19,7 @@ export const useAddIncome = () => {
       queryClient.invalidateQueries({
         queryKey: ['transactions', temp],
       });
+
       toast.success(GetApiResponseMessage(data));
     },
     onError: (error) => {
@@ -26,22 +29,22 @@ export const useAddIncome = () => {
 };
 
 export const useUpdateIncome = () => {
-  const temp = localStorage.getItem('temp');
+  const temp = useAuthStore((state) => state.getUserKey());
   return useMutation({
     mutationFn: incomeApiOperations.UpdateIncome,
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       const incomeId = variables?.incomeId;
 
-      console.log(incomeId);
       // invalidate list
       queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
       });
 
       //invalidate single
-      queryClient.invalidateQueries({
-        queryKey: ['income', temp, incomeId],
-      });
+      queryClient.setQueryData(['incomes', temp, incomeId], (old) => ({
+        ...old,
+        data: data.data?.updatedIncome,
+      }));
 
       //invalidate transactions list
       queryClient.invalidateQueries({
@@ -57,23 +60,23 @@ export const useUpdateIncome = () => {
 };
 
 export const useDeleteIncome = () => {
-  const temp = localStorage.getItem('temp');
+  const temp = useAuthStore((state) => state.getUserKey());
   return useMutation({
     mutationFn: incomeApiOperations.DeleteIncome,
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       const incomeId = variables?.incomeId;
 
-      queryClient.invalidateQueries({
+      (queryClient.invalidateQueries({
         queryKey: ['incomes', temp],
-      });
-      //invalidate single
-      queryClient.invalidateQueries({
-        queryKey: ['income', temp, incomeId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['transactions', temp],
-      });
-      toast.success(GetApiResponseMessage(data));
+      }),
+        //invalidate single
+        queryClient.removeQueries({
+          queryKey: ['incomes', temp, incomeId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['transactions', temp],
+        }),
+        toast.success(GetApiResponseMessage(data)));
     },
     onError: (error) => {
       toast.error(GetApiErrorMessage(error));
@@ -82,18 +85,18 @@ export const useDeleteIncome = () => {
 };
 
 export const useDeleteAllIncomes = () => {
-  const temp = localStorage.getItem('temp');
+  const temp = useAuthStore((state) => state.getUserKey());
 
   return useMutation({
     mutationFn: incomeApiOperations.DeleteAllIncomes,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (data) => {
+      (queryClient.removeQueries({
         queryKey: ['incomes', temp],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['transactions', temp],
-      });
-      toast.success(GetApiResponseMessage(data));
+      }),
+        queryClient.removeQueries({
+          queryKey: ['transactions', temp],
+        }),
+        toast.success(GetApiResponseMessage(data)));
     },
     onError: (error) => {
       toast.error(GetApiErrorMessage(error));
@@ -102,38 +105,40 @@ export const useDeleteAllIncomes = () => {
 };
 
 export const useGetSingleIncome = (incomeId) => {
-  const temp = localStorage.getItem('temp');
+  const temp = useAuthStore((state) => state.getUserKey());
 
   return useQuery({
-    queryKey: ['income', temp, incomeId],
+    queryKey: ['incomes', temp, incomeId],
     queryFn: () => incomeApiOperations.GetSingleIncome(incomeId),
     enabled: !!incomeId,
   });
 };
 
 export const useGetAllIncomes = ({ page, limit, sort, startDate, endDate, source }) => {
-  const temp = localStorage.getItem('temp');
+  const temp = useAuthStore((state) => state.getUserKey());
   return useQuery({
-    queryKey: ['incomes', temp, { page, limit, sort, startDate, endDate, source }],
+    queryKey: ['incomes', temp, page, limit, sort, startDate, endDate, source],
+
     queryFn: () =>
       incomeApiOperations.GetAllIncomes({ page, limit, sort, startDate, endDate, source }),
   });
 };
 
-export const useDownloadIncomePdf = ({ startDate, endDate }) => {
+export const useDownloadIncomePdf = () => {
   return useMutation({
-    mutationFn: () => incomeApiOperations.DownloadPdfIncome({ startDate, endDate }),
+    mutationFn: (params) => incomeApiOperations.DownloadPdfIncome(params),
     onSuccess: (data) => {
       const url = window.URL.createObjectURL(data); // no need new Blob
 
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'expense-report.pdf';
+      link.download = 'income-report.pdf';
 
-      document.body.appendChild(link);
+     
       link.click();
+      link.remove();
 
-      document.body.removeChild(link);
+
       window.URL.revokeObjectURL(url);
 
       toast.success('PDF downloaded successfully');

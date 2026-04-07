@@ -12,6 +12,7 @@ const InputField = ({
   control, // ✅ use control instead of register
   placeholder,
   className = '',
+  ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
@@ -29,6 +30,7 @@ const InputField = ({
             <Input
               {...field} // ✅ important
               disabled={loading}
+              {...props}
               placeholder={placeholder}
               type={isPassword && showPassword ? 'text' : type}
               className={`bg-blue-50 outline-none focus:ring-blue-100! text-black/70 font-content placeholder:text-black/30 border-none ${className}`}

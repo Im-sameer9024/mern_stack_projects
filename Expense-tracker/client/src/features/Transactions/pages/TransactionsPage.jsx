@@ -1,7 +1,7 @@
 import DataWrapper from '@/features/DataWrapper';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Transactions from '../components/Transactions';
-import { useGetAllTransactions } from '../hooks/useTransactions';
+import { useDownloadTransactionPdf, useGetAllTransactions } from '../hooks/useTransactions';
 import EntryRowSkeleton from '@/shared/components/skeletons/EntryRowSkeleton';
 import CustomPagination from '@/shared/components/custom/CustomPagination';
 import FilterSection from '@/features/FilterSection';
@@ -15,26 +15,35 @@ const TransactionsPage = () => {
     endDate: null,
   });
 
+  const queryParams = useMemo(
+    () => ({
+      page: filters.page,
+      limit: filters.limit,
+      sort: filters.sort,
+      source: filters.source,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+    }),
+    [filters]
+  );
+
   const {
     data: TransactionsData,
     isPending: TransactionPending,
     error: TransactionErrorMessage,
     isError: TransactionError,
-  } = useGetAllTransactions({
-    page: filters.page,
-    limit: filters.limit,
-    sort: filters.sort,
-    startDate: filters.startDate,
-    endDate: filters.endDate,
-  });
+  } = useGetAllTransactions(queryParams);
+
+  const{mutate: DownloadTransactionsPDF, isPending: DownloadTransactionsPDFPending} = useDownloadTransactionPdf();
 
   const TransactionsFinalData = TransactionsData?.data;
+
 
   const filterChangeHandler = (name, value) => {
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      // page:1
+      page: 1,
     }));
   };
 
@@ -59,12 +68,17 @@ const TransactionsPage = () => {
             onReset={resetFilter}
           />
         }
-        content={<Transactions data={TransactionsFinalData?.allTransactions || []} />}
+        content={<Transactions data={TransactionsFinalData?.allTransactions || []} total={TransactionsFinalData?.totalDetails[0]} />}
         errorMessage={TransactionErrorMessage?.message}
         isError={TransactionError}
         isLoading={TransactionPending}
         skeleton={<EntryRowSkeleton />}
         skeletonCount={5}
+
+         startDate={filters?.startDate}
+          endDate={filters?.endDate}
+          DownloadPDF={DownloadTransactionsPDF}
+          DownloadPDFPending={DownloadTransactionsPDFPending} 
       />
 
       {/* Pagination  */}

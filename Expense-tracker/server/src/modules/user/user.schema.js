@@ -19,12 +19,6 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    avatar: {
-      type: String,
-    },
-    avatar_public_id: {
-      type: String,
-    },
     resetPasswordToken: {
       type: String,
     },
@@ -42,7 +36,10 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ refreshToken: 1 });
+userSchema.index({
+  resetPasswordToken: 1,
+  resetPasswordExpires: 1,
+});
 
 userSchema.pre('save', function () {
   if (!this.isModified('password')) return;

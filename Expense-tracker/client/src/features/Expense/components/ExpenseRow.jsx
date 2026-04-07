@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import UpdateExpenseForm from './UpdateExpenseForm';
 import CustomButton from '@/shared/components/custom/CustomButton';
 import { PencilLine, Trash } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { UpdateExpenseValidationSchema } from '../validation/expense.validationSchema';
 
 const ExpenseRow = ({ rowData, path }) => {
   const [expenseId, setExpenseId] = useState(null);
@@ -72,7 +74,14 @@ const ExpenseRow = ({ rowData, path }) => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm({
+    resolver: zodResolver(UpdateExpenseValidationSchema),
+    defaultValues: {
+      source: '',
+      amount: '',
+      date: '',
+    },
+  });
 
   useEffect(() => {
     if (ExpenseActualData) {
