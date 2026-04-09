@@ -1,12 +1,12 @@
 import axios from "axios";
-import { useAuthStore } from "../features/Auth/authStore";
+import { useAuthStore } from "@/app/store/authStore";
+import { AuthApiOperations } from "@/features/Auth/authApiOperations";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-
+// ---------------- AXIOS INSTANCE ----------------
 export const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
-  timeout: 50000,
+  timeout: 30000,
 });
 
 // ---------------- REQUEST ----------------
@@ -15,13 +15,15 @@ axiosInstance.interceptors.request.use(
     const token = useAuthStore.getState().token;
 
     if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
     }
 
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // ---------------- RESPONSE ----------------
@@ -29,26 +31,21 @@ let isRefreshing = false;
 let isLoggingOut = false;
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (res) => res,
 
   async (error) => {
-    const originalRequest = error.config;
-    const { setToken } = useAuthStore.getState();
+    const originalRequest = error?.config;
+    const { setToken, clearToken } = useAuthStore.getState();
 
-    // ❌ No response (network error)
-    if (!error.response) {
-      return Promise.reject(error);
-    }
-
-    // ❌ No config
-    if (!originalRequest) {
+    // ❌ Network / unknown error
+    if (!error?.response || !originalRequest) {
       return Promise.reject(error);
     }
 
     const status = error.response.status;
 
-    // 🔥 IMPORTANT: Skip refresh API itself
-    if (originalRequest.url?.includes("/api/refresh-token")) {
+    // 🔥 Skip refresh API itself
+    if (originalRequest.url?.includes("/refresh-token")) {
       return Promise.reject(error);
     }
 
@@ -56,6 +53,7 @@ axiosInstance.interceptors.response.use(
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // 🔒 Prevent multiple refresh calls
       if (isRefreshing) {
         return Promise.reject(error);
       }
@@ -63,23 +61,38 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axiosInstance.get("/api/refresh-token");
-        const newAccessToken = res.data?.data?.accessToken;
+        const res = await axiosInstance.get("/refresh-token", {
+          __skipAuthRefresh: true,
+        });
 
-        if (!newAccessToken) throw new Error("No token");
+        const newToken = res?.data?.data?.accessToken;
 
-        setToken(newAccessToken);
+        if (!newToken) throw new Error("No token");
 
-        originalRequest.headers = originalRequest.headers || {};
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        // ✅ Save token
+        setToken(newToken);
+
+        // ✅ Retry original request
+        originalRequest.headers = {
+          ...originalRequest.headers,
+          Authorization: `Bearer ${newToken}`,
+        };
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // 🔴 LOGOUT ONLY ONCE
+        // 🔴 Logout only once
         if (!isLoggingOut) {
           isLoggingOut = true;
 
-          setToken(null);
+          try {
+            await AuthApiOperations.LogoutUser();
+          } catch (e) {
+            console.warn("Logout API failed");
+          }
+
+          clearToken();
+          localStorage.removeItem("auth-storage");
+
           window.location.assign("/login");
         }
 
@@ -90,16 +103,24 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 // ---------------- API CONNECTOR ----------------
-export const apiConnector = ({ method, url, bodyDate, headers, params }) => {
+export const apiConnector = ({
+  method,
+  url,
+  bodyData,
+  headers,
+  params,
+  responseType,
+}) => {
   return axiosInstance({
     method,
     url,
-    data: bodyDate || null,
+    data: bodyData || undefined,
     headers: headers || {},
     params: params || {},
+    responseType: responseType || "json",
   });
 };

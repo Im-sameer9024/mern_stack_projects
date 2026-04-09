@@ -12,8 +12,8 @@ import transactionRoute from './modules/transaction/transaction.route.js';
 
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS;
-
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+console.log(allowedOrigins)
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(
   cors({
-    origin:allowedOrigins,
+    origin:true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

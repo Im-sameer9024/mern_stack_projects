@@ -7,28 +7,7 @@ export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
   timeout: 30000, // 30 sec
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
-
-//-----------------Queue Handling ---------------------------
-
-const MAX_QUEUE_SIZE = 20;
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
 
 //------------------------- Request Interceptor -----------------------------
 
@@ -47,6 +26,9 @@ axiosInstance.interceptors.request.use(
 
 //------------------------- Response Interceptor -----------------------------
 
+let isRefreshing = false;
+let isLoggingOut = false;
+
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -55,40 +37,29 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error?.config;
     const { setToken, clearToken } = useAuthStore.getState();
 
-    if (!originalRequest) {
+     // ❌ Network / unknown error
+    if (!error?.response || !originalRequest) {
       return Promise.reject(error);
     }
 
     const status = error?.response?.status;
 
-    if (
-      (status === 401 || status === 403) &&
-      !originalRequest.__isRetryRequest &&
-      !originalRequest.url?.includes('/user/refresh-token') &&
-      !originalRequest.url?.includes('/user/logout') &&
-      !originalRequest.__skipAuthRefresh
-    ) {
+    // 🔥 IMPORTANT: Skip refresh API itself
+    if (originalRequest.url?.includes('/refresh-token')) {
+      return Promise.reject(error);
+    }
+
+    if (status === 401 && !originalRequest._retry) {
+
+      originalRequest._retry = true;
       //---------------------if already refreshing token -----------------
 
       if (isRefreshing) {
-        if (failedQueue.length >= MAX_QUEUE_SIZE) {
-          return Promise.reject(new Error('Too many requests'));
-        }
-
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axiosInstance(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
+        return Promise.reject(error);
       }
 
       //--------------- start Refresh--------------------------
 
-      originalRequest.__isRetryRequest = true;
       isRefreshing = true;
 
       try {
@@ -104,23 +75,23 @@ axiosInstance.interceptors.response.use(
         // save token
         setToken(newAccessToken);
         // resolve queued requests
-        processQueue(null, newAccessToken);
 
         // retry original request
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        originalRequest.__skipLoader = true;
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        if (!isLoggingOut) {
+          isLoggingOut = true;
 
+          await AuthApiOperations.LogoutUser();
+          clearToken();
+          localStorage.clear();
+          // redirect user
+          window.location.href = '/login';
+        }
         //-------- logout flow ---------------
-        await AuthApiOperations.LogoutUser();
-        clearToken();
-        localStorage.clear();
-        // redirect user
-        window.location.href = '/login';
 
         return Promise.reject(refreshError);
       } finally {
