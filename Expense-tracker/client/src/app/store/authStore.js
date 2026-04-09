@@ -6,14 +6,15 @@ export const useAuthStore = create(
     (set) => ({
       //------------------- initial states --------------------------
       token: null,
-      tokenLoading: true,
+      tokenLoading: false,
       forgotPasswordToken: null,
       getUserKey: () => {
         return localStorage.getItem('temp') ? localStorage.getItem('temp') : null;
       },
 
       //---------------- helper functions--------------------
-      setToken: (token) => set({ token: token, tokenLoading: false }, false, 'auth/setToken'),
+      setToken: (token) => set({ token: token }, false, 'auth/setToken'),
+      setTokenLoading: (loading) => set({ tokenLoading: loading }, false, 'auth/setTokenLoading'),
       setPasswordToken: (token) =>
         set({ forgotPasswordToken: token }, false, 'auth/setPasswordToken'),
 

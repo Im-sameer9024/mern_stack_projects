@@ -15,12 +15,14 @@ const useAuthInit = () => {
         }
       } catch (error) {
         if (error.response?.status === 401) {
+          setToken(null)
           // user not logged in → do nothing
           return;
         }
         // not logged in
       } finally {
         setLoading(false);
+        
       }
     };
 

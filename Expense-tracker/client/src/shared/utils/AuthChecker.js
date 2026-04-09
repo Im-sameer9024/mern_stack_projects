@@ -1,50 +1,34 @@
+'use client';
+
+import { useEffect } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { AuthApiOperations } from '@/features/Auth/authApiOperations';
 import { axiosInstance } from '@/services/apiConnector';
-import React, { useEffect } from 'react';
-import { toast } from 'sonner';
-import queryClient from './reactQuery';
 
 const AuthChecker = () => {
-  //-------------- zustand store ------------
   const setToken = useAuthStore((state) => state.setToken);
-  const handleAutoLogout = () => {
-    const { clearToken } = useAuthStore.getState();
-
-    // clear auth
-    clearToken();
-
-    // clear queries
-    queryClient.clear();
-
-    // clear storage
-    localStorage.clear();
-  };
+  const setTokenLoading = useAuthStore((state) => state.setTokenLoading);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initAuth = async () => {
       try {
-        const res = await axiosInstance.get('/user/refresh-token', {
-          __skipAuthRefresh: true,
-          __skipLoader: true,
-        });
+        setTokenLoading(true);
 
-        const newAccessToken = res.data?.data?.accessToken;
+        // 🔥 call refresh token API
+        const res = await axiosInstance('/user/refresh-token');
 
-        if (newAccessToken) {
-          setToken(newAccessToken);
+        if (res.data?.success) {
+          setToken(res.data?.data?.accessToken);
         }
       } catch (error) {
-        if (error?.response?.status === 401) {
-          handleAutoLogout();
-        } else {
-          toast.error(error.response?.data?.message || 'Something went wrong');
-        }
+        console.log(error);
+        setToken(null);
+      } finally {
+        setTokenLoading(false);
       }
     };
 
-    initializeAuth();
-  }, [setToken]);
+    initAuth();
+  }, [setToken, setTokenLoading]);
 
   return null;
 };

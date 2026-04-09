@@ -5,11 +5,6 @@ import CustomSpinner from '../custom/CustomSpinner';
 
 const OpenRoute = ({ children }) => {
   const token = useAuthStore((state) => state.token);
-  const tokenLoading = useAuthStore((state) => state.tokenLoading);
-
-  if (tokenLoading) {
-    return <CustomSpinner />;
-  }
 
   if (token) {
     return <Navigate to="/dashboard" replace />;
