@@ -14,7 +14,9 @@ const AuthChecker = () => {
         setTokenLoading(true);
 
         // 🔥 call refresh token API
-        const res = await axiosInstance('/user/refresh-token');
+        const res = await axiosInstance.get('/user/refresh-token', {
+          __skipAuthRefresh: true,
+        });
 
         if (res.data?.success) {
           setToken(res.data?.data?.accessToken);

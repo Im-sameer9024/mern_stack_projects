@@ -37,25 +37,23 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error?.config;
     const { setToken, clearToken } = useAuthStore.getState();
 
-     // ❌ Network / unknown error
+    // ❌ Network / unknown error
     if (!error?.response || !originalRequest) {
       return Promise.reject(error);
     }
 
     const status = error?.response?.status;
 
-    // 🔥 IMPORTANT: Skip refresh API itself
-    if (originalRequest.url?.includes('/refresh-token')) {
+    if (originalRequest.__skipAuthRefresh) {
       return Promise.reject(error);
     }
 
-    if (status === 401 && !originalRequest._retry) {
-
+    if (status === 401 && !originalRequest._retry && !originalRequest.__skipAuthRefresh) {
       originalRequest._retry = true;
       //---------------------if already refreshing token -----------------
 
       if (isRefreshing) {
-        return Promise.reject(error);
+        return  new Promise(() => {});
       }
 
       //--------------- start Refresh--------------------------
@@ -87,9 +85,9 @@ axiosInstance.interceptors.response.use(
 
           await AuthApiOperations.LogoutUser();
           clearToken();
-          localStorage.clear();
+          localStorage.removeItem('temp');
           // redirect user
-          window.location.href = '/login';
+          window.location.replace("/login")
         }
         //-------- logout flow ---------------
 
@@ -107,9 +105,9 @@ export const apiConnector = ({ method, url, bodyData, headers, params, responseT
   return axiosInstance({
     method: method,
     url: url,
-    data: bodyData ? bodyData : null,
-    headers: headers ? headers : null,
-    params: params ? params : null,
+    data: bodyData ,
+    headers: headers ? headers : {},
+    params: params ? params : {},
     responseType: responseType ? responseType : null,
   });
 };
