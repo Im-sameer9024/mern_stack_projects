@@ -128,10 +128,15 @@ const LogOut = async (req, res) => {
     }
 
     try {
-      await jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
       // even if invalid → clear cookie (important)
-      res.clearCookie('refreshToken');
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/', // ✅ MUST match
+      });
       return ApiResponse(res, 401, null, 'Invalid refresh token');
     }
 
@@ -139,7 +144,8 @@ const LogOut = async (req, res) => {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
     });
 
     return ApiResponse(res, 200, null, 'Logged out successfully');
