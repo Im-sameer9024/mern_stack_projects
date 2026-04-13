@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error?.config;
-    const { setToken } = useAuthStore.getState();
+    const { setToken, clearToken } = useAuthStore.getState();
 
     // ❌ Network / unknown error
     if (!error?.response || !originalRequest) {
@@ -53,7 +53,7 @@ axiosInstance.interceptors.response.use(
       //---------------------if already refreshing token -----------------
 
       if (isRefreshing) {
-        return new Promise(() => {});
+        return  new Promise(() => {});
       }
 
       //--------------- start Refresh--------------------------
@@ -84,6 +84,10 @@ axiosInstance.interceptors.response.use(
           isLoggingOut = true;
 
           await AuthApiOperations.LogoutUser();
+          clearToken();
+          localStorage.removeItem('temp');
+          // redirect user
+          window.location.replace("/login")
         }
         //-------- logout flow ---------------
 
@@ -101,7 +105,7 @@ export const apiConnector = ({ method, url, bodyData, headers, params, responseT
   return axiosInstance({
     method: method,
     url: url,
-    data: bodyData,
+    data: bodyData ,
     headers: headers ? headers : {},
     params: params ? params : {},
     responseType: responseType ? responseType : null,
