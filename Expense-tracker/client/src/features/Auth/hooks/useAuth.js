@@ -95,3 +95,17 @@ export const useResetPassword = () => {
     },
   });
 };
+
+export const useUpdateProfileImage = () => {
+  const temp = localStorage.getItem('temp');
+  return useMutation({
+    mutationFn: AuthApiOperations.UpdateProfileImage,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['userDetails', temp], data);
+      toast.success(GetApiResponseMessage(data));
+    },
+    onError: (error) => {
+      toast.error(GetApiErrorMessage(error));
+    },
+  });
+};

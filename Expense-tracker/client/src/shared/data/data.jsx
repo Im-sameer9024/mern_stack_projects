@@ -1,4 +1,4 @@
-import { HandCoins, LayoutDashboard, LogOut, WalletMinimal, ScrollText } from 'lucide-react';
+import { HandCoins, LayoutDashboard, LogOut, WalletMinimal, ScrollText, Settings } from 'lucide-react';
 
 export const SidebarLinks = [
   {
@@ -28,6 +28,12 @@ export const SidebarLinks = [
   },
   {
     id: 5,
+    icon: <Settings />,
+    text: 'Settings',
+    link: '/settings',
+  },
+  {
+    id: 6,
     icon: <LogOut />,
     text: 'Logout',
     link: '/logout',

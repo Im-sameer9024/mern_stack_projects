@@ -1,7 +1,8 @@
 import { apiConnector } from '@/services/apiConnector';
 import { userApiUrls } from '@/services/apiEndpoints';
 
-const { SIGNUP_USER, LOGIN_USER, REFRESH_TOKEN, LOGOUT_USER, GET_USER_DETAILS } = userApiUrls;
+const { SIGNUP_USER, LOGIN_USER, REFRESH_TOKEN, LOGOUT_USER, GET_USER_DETAILS, UPDATE_PROFILE_IMAGE } =
+  userApiUrls;
 
 export const AuthApiOperations = {
   //------------------ user register --------------
@@ -51,6 +52,18 @@ export const AuthApiOperations = {
     const response = await apiConnector({
       method: 'GET',
       url: GET_USER_DETAILS,
+    });
+    return response.data;
+  },
+
+  UpdateProfileImage: async (formData) => {
+    const response = await apiConnector({
+      method: 'POST',
+      url: UPDATE_PROFILE_IMAGE,
+      bodyData: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   },

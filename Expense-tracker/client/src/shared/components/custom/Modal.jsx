@@ -1,20 +1,24 @@
 /* eslint-disable no-unused-vars */
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { IoCloseOutline } from 'react-icons/io5';
 
-const Modal = ({ isVisible, content, onClose, width = '40%' }) => {
-  return (
+const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
-      {isVisible && (
+      {isVisible ? (
         <motion.div
+          key="modal-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="
             fixed inset-0 z-50 
             flex items-center justify-center
-            bg-black/30 backdrop-blur-sm
+            bg-black/30 backdrop-blur-sm 
           "
         >
           {/* Modal Box */}
@@ -23,12 +27,13 @@ const Modal = ({ isVisible, content, onClose, width = '40%' }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.25 }}
-            style={{ width }}
+            style={{ width: `min(92vw, ${width})`, maxHeight: '90vh' }}
             className="
               bg-white/90 backdrop-blur-md
               p-5 rounded-xl shadow-xl
               border border-slate-200
               relative
+              overflow-y-auto 
             "
           >
             {/* Close Button */}
@@ -48,8 +53,9 @@ const Modal = ({ isVisible, content, onClose, width = '40%' }) => {
             <div className="mt-4">{content}</div>
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
+      ) : null}
+    </AnimatePresence>,
+    document.body
   );
 };
 

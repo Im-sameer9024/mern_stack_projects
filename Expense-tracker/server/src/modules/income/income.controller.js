@@ -38,6 +38,7 @@ const AddIncome = async (req, res) => {
 
 const EditIncome = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { incomeId, amount, date, source } = req.body;
 
     if (!incomeId) {
@@ -45,8 +46,8 @@ const EditIncome = async (req, res) => {
     }
 
     const [updateTransaction, updatedIncome] = await Promise.all([
-      Income.findByIdAndUpdate(
-        incomeId,
+      Income.findOneAndUpdate(
+        { _id: incomeId, userId },
         {
           amount,
           date: new Date(date),
@@ -55,7 +56,7 @@ const EditIncome = async (req, res) => {
         { new: true }
       ),
       Transaction.findOneAndUpdate(
-        { transactionId: incomeId, transactionType: TransactionTypes.INCOME },
+        { transactionId: incomeId, transactionType: TransactionTypes.INCOME, userId },
         {
           transactionAmount: amount,
           source: source,
@@ -64,6 +65,10 @@ const EditIncome = async (req, res) => {
         { new: true }
       ),
     ]);
+
+    if (!updatedIncome) {
+      return ApiResponse(res, 404, null, 'Income not found');
+    }
 
     return ApiResponse(
       res,
@@ -217,13 +222,14 @@ const GetAllIncome = async (req, res) => {
 
 const GetSingleIncome = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { incomeId } = req.params;
 
     if (!incomeId) {
       return ApiResponse(res, 400, null, 'IncomeId is required');
     }
 
-    const income = await Income.findById(incomeId);
+    const income = await Income.findOne({ _id: incomeId, userId });
 
     if (!income) {
       return ApiResponse(res, 404, null, 'Income not found');
@@ -237,15 +243,25 @@ const GetSingleIncome = async (req, res) => {
 
 const DeleteIncome = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { incomeId } = req.body;
 
+    if (!incomeId) {
+      return ApiResponse(res, 400, null, 'Income id is required');
+    }
+
     const [deletedIncome, deletedTransaction] = await Promise.all([
-      Income.findByIdAndDelete(incomeId),
+      Income.findOneAndDelete({ _id: incomeId, userId }),
       Transaction.findOneAndDelete({
         transactionId: incomeId,
         transactionType: TransactionTypes.INCOME,
+        userId,
       }),
     ]);
+
+    if (!deletedIncome) {
+      return ApiResponse(res, 404, null, 'Income not found');
+    }
 
     return ApiResponse(
       res,
@@ -308,7 +324,7 @@ const DownloadIncome = async (req, res) => {
       date: 1,
     });
 
-    if (!incomes) {
+    if (!incomes.length) {
       return ApiResponse(res, 404, null, 'No incomes found');
     }
 

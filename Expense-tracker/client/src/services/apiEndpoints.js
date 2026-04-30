@@ -4,6 +4,8 @@ export const userApiUrls = {
   REFRESH_TOKEN: '/user/refresh-token',
   LOGOUT_USER: '/user/logout',
   GET_USER_DETAILS: '/user/user-details',
+  UPDATE_PROFILE_IMAGE: '/user/update-image',
+  DELETE_ACCOUNT: '/user/delete-account',
   FORGOT_PASSWORD_LINK: '/user/forgot-password',
   FORGOT_PASSWORD: '/user/reset-password',
 };
@@ -35,4 +37,5 @@ export const dashboardApiUrl = {
 export const transactionApiUrls = {
   GET_ALL_TRANSACTIONS: (params) => `/transactions/get-all-transactions?${params}`,
   DOWNLOAD_TRANSACTIONS_PDF: (params) => `/transactions/download-pdf?${params}`,
+  DELETE_ALL_DATA: '/transactions/delete-all-data',
 };

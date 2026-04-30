@@ -10,6 +10,10 @@ import crypto from 'crypto';
 import { resetPasswordEmailTemplate } from '../../shared/mail-templates/resetPasswordEmailTemplate .js';
 import { passwordResetSuccessTemplate } from '../../shared/mail-templates/passwordResetSuccessTemplate .js';
 import { registerEmailTemplate } from '../../shared/mail-templates/registerEmailTemplate.js';
+import { UploadImageToCloudinary } from '../../shared/utils/imageUpload.js';
+import Income from '../income/income.schema.js';
+import Expense from '../expense/expense.schema.js';
+import Transaction from '../transaction/transaction.schema.js';
 
 const SignUp = async (req, res) => {
   try {
@@ -102,6 +106,11 @@ const RefreshAccessToken = async (req, res) => {
       return ApiResponse(res, 401, null, 'Invalid refresh token');
     }
 
+    const existingUser = await User.findById(decoded.id).select('_id');
+    if (!existingUser) {
+      return ApiResponse(res, 401, null, 'User not found');
+    }
+
     // Generate new access token
     const newAccessToken = jwt.sign(
       {
@@ -186,7 +195,9 @@ const ResetPasswordToken = async (req, res) => {
       'Reset Password Email',
       resetPasswordEmailTemplate(user.name, url)
     );
-  } catch (error) {}
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
 };
 
 const ResetPassword = async (req, res) => {
@@ -219,16 +230,18 @@ const ResetPassword = async (req, res) => {
     await mailSender(
       user.email,
       'Password Reset Successfully',
-      passwordResetSuccessTemplate(user.name, `${process.env.CLIENT_URL}/login}`)
+      passwordResetSuccessTemplate(user.name, `${process.env.CLIENT_URL}/login`)
     );
-  } catch (error) {}
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
 };
 
 const GetUserDetails = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = await User.findById(userId).select('_id name email');
+    const user = await User.findById(userId).select('_id name email avatarUrl');
 
     if (!user) {
       return ApiResponse(res, 400, null, 'User not Registered');
@@ -240,6 +253,59 @@ const GetUserDetails = async (req, res) => {
   }
 };
 
+const UpdateImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return ApiResponse(res, 400, null, 'No file uploaded');
+    }
+
+    const userId = req.user.id;
+    const buffer = req.file.buffer;
+    const uploadedImage = await UploadImageToCloudinary(buffer);
+
+    if (!uploadedImage?.secure_url) {
+      return ApiResponse(res, 500, null, 'Error uploading image');
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { avatarUrl: uploadedImage.secure_url },
+      { new: true }
+    ).select('_id name email avatarUrl');
+
+    if (!updatedUser) {
+      return ApiResponse(res, 404, null, 'User not found');
+    }
+
+    return ApiResponse(res, 200, updatedUser, 'Profile image updated successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
+
+const DeleteUserAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await Promise.all([
+      Income.deleteMany({ userId }),
+      Expense.deleteMany({ userId }),
+      Transaction.deleteMany({ userId }),
+      User.findByIdAndDelete(userId),
+    ]);
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    return ApiResponse(res, 200, null, 'User account deleted successfully');
+  } catch (error) {
+    return ApiError(res, 500, null, error.message, error);
+  }
+};
 export {
   SignUp,
   LogIn,
@@ -248,4 +314,6 @@ export {
   ResetPasswordToken,
   GetUserDetails,
   ResetPassword,
+  UpdateImage,
+  DeleteUserAccount
 };

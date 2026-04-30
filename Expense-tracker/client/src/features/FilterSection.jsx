@@ -3,6 +3,7 @@ import { Input } from '@/shared/components/ui/input';
 import CustomButton from '@/shared/components/custom/CustomButton';
 
 const FilterSection = ({ filterChangeHandler, filters, onReset }) => {
+  const today = new Date().toISOString().split('T')[0];
   return (
     <div className="flex flex-col gap-4 py-4">
       {/* 🔥 Filters Grid */}
@@ -37,7 +38,7 @@ const FilterSection = ({ filterChangeHandler, filters, onReset }) => {
           <label className="text-sm font-medium text-gray-700">Start Date</label>
           <Input
             type="date"
-            max={new Date().toISOString().split('T')[0]}
+            max={today}
             value={filters?.startDate || ''}
             onChange={(e) => filterChangeHandler('startDate', e.target.value)}
             className="bg-blue-50 border-none text-black/70"
@@ -49,7 +50,8 @@ const FilterSection = ({ filterChangeHandler, filters, onReset }) => {
           <label className="text-sm font-medium text-gray-700">End Date</label>
           <Input
             type="date"
-            max={new Date().toISOString().split('T')[0]}
+            max={today}
+            min={filters?.startDate || ''}
             value={filters?.endDate || ''}
             onChange={(e) => filterChangeHandler('endDate', e.target.value)}
             className="bg-blue-50 border-none text-black/70"

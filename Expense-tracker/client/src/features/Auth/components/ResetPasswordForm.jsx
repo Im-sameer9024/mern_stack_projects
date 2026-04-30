@@ -1,9 +1,11 @@
 import CustomButton from '@/shared/components/custom/CustomButton';
 import InputField from '@/shared/components/custom/InputField';
+import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useResetPassword } from '../hooks/useAuth';
 import { useParams } from 'react-router-dom';
+import { resetPasswordValidationSchema } from '../validation/auth.validationSchema';
 
 const ResetPasswordForm = () => {
   const {
@@ -11,7 +13,7 @@ const ResetPasswordForm = () => {
     formState: { errors },
     handleSubmit,
   } = useForm({
-    // resolver: zodResolver(LoginTest),
+    resolver: zodResolver(resetPasswordValidationSchema),
     defaultValues: {
       newPassword: '',
       confirmPassword: '',

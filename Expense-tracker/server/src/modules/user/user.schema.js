@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
 
     resetPasswordToken: {
       type: String,
@@ -41,9 +46,15 @@ userSchema.index({
   resetPasswordExpires: 1,
 });
 
-userSchema.pre('save', function () {
+userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  this.password = bcrypt.hash(this.password, 10);
+
+  // Avoid re-hashing already-hashed passwords
+  if (typeof this.password === 'string' && this.password.startsWith('$2')) {
+    return;
+  }
+
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 const User = mongoose.model('User', userSchema);

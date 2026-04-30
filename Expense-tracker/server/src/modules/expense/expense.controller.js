@@ -39,11 +39,16 @@ const AddExpense = async (req, res) => {
 
 const EditExpense = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { expenseId, amount, date, source } = req.body;
 
+    if (!expenseId) {
+      return ApiResponse(res, 400, null, 'Expense id is required');
+    }
+
     const [updatedExpense, updatedTransaction] = await Promise.all([
-      Expense.findByIdAndUpdate(
-        expenseId,
+      Expense.findOneAndUpdate(
+        { _id: expenseId, userId },
         {
           amount,
           date: new Date(date),
@@ -55,6 +60,7 @@ const EditExpense = async (req, res) => {
         {
           transactionId: expenseId,
           transactionType: TransactionTypes.EXPENSE,
+          userId,
         },
         {
           transactionAmount: amount,
@@ -64,6 +70,10 @@ const EditExpense = async (req, res) => {
         { new: true }
       ),
     ]);
+
+    if (!updatedExpense) {
+      return ApiResponse(res, 404, null, 'Expense not found');
+    }
 
     return ApiResponse(
       res,
@@ -215,13 +225,14 @@ const GetAllExpense = async (req, res) => {
 
 const GetSingleExpense = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { expenseId } = req.params;
 
     if (!expenseId) {
       return ApiResponse(res, 404, null, 'ExpenseId not found');
     }
 
-    const expense = await Expense.findById(expenseId);
+    const expense = await Expense.findOne({ _id: expenseId, userId });
 
     if (!expense) {
       return ApiResponse(res, 404, null, 'Expense not found');
@@ -235,15 +246,25 @@ const GetSingleExpense = async (req, res) => {
 
 const DeleteExpense = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { expenseId } = req.body;
 
+    if (!expenseId) {
+      return ApiResponse(res, 400, null, 'Expense id is required');
+    }
+
     const [deletedExpense, deletedTransaction] = await Promise.all([
-      Expense.findByIdAndDelete(expenseId),
+      Expense.findOneAndDelete({ _id: expenseId, userId }),
       Transaction.findOneAndDelete({
         transactionId: expenseId,
         transactionType: TransactionTypes.EXPENSE,
+        userId,
       }),
     ]);
+
+    if (!deletedExpense) {
+      return ApiResponse(res, 404, null, 'Expense not found');
+    }
 
     return ApiResponse(
       res,

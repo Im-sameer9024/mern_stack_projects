@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import ApiError from '../shared/utils/apiError.js';
 import ApiResponse from '../shared/utils/apiResponse.js';
 
 const auth = async (req, res, next) => {

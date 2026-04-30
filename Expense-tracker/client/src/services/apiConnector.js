@@ -28,6 +28,7 @@ axiosInstance.interceptors.request.use(
 
 let isRefreshing = false;
 let isLoggingOut = false;
+let refreshPromise = null;
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -52,8 +53,15 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       //---------------------if already refreshing token -----------------
 
-      if (isRefreshing) {
-        return  new Promise(() => {});
+      if (isRefreshing && refreshPromise) {
+        try {
+          const newAccessToken = await refreshPromise;
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axiosInstance(originalRequest);
+        } catch (queuedError) {
+          return Promise.reject(queuedError);
+        }
       }
 
       //--------------- start Refresh--------------------------
@@ -61,11 +69,13 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axiosInstance.get('/user/refresh-token', {
-          __skipAuthRefresh: true,
-        });
-        const newAccessToken = res?.data?.data?.accessToken;
+        refreshPromise = axiosInstance
+          .get('/user/refresh-token', {
+            __skipAuthRefresh: true,
+          })
+          .then((res) => res?.data?.data?.accessToken);
 
+        const newAccessToken = await refreshPromise;
         if (!newAccessToken) {
           throw new Error('No access token received');
         }
@@ -93,7 +103,9 @@ axiosInstance.interceptors.response.use(
 
         return Promise.reject(refreshError);
       } finally {
+        isLoggingOut = false;
         isRefreshing = false;
+        refreshPromise = null;
       }
     }
 

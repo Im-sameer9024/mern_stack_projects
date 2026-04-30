@@ -37,4 +37,34 @@ const forgotPasswordEmailValidationSchema = z.object({
   email: z.email({ message: 'Email is not valid' }),
 });
 
-export { LoginValidationSchema, forgotPasswordEmailValidationSchema, SignupValidationSchema };
+const resetPasswordValidationSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(6, { message: 'Password must be at least 6 char' })
+      .max(18, { message: 'Password must be at most 18 char' })
+      .regex(/[A-Z]/, {
+        message: 'Password must contain at least one uppercase letter',
+      })
+      .regex(/[a-z]/, {
+        message: 'Password must contain one lowercase letter',
+      })
+      .regex(/[0-9]/, {
+        message: 'Password must contain one number',
+      })
+      .regex(/[^A-Za-z0-9]/, {
+        message: 'Password must contain one special character',
+      }),
+    confirmPassword: z.string().min(1, { message: 'Confirm password is required' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export {
+  LoginValidationSchema,
+  forgotPasswordEmailValidationSchema,
+  SignupValidationSchema,
+  resetPasswordValidationSchema,
+};
