@@ -21,7 +21,7 @@ const IncomePage = lazy(() => import('@/features/Income/pages/IncomePage'));
 const ExpensePage = lazy(() => import('@/features/Expense/pages/ExpensePage'));
 const TransactionsPage = lazy(() => import('@/features/Transactions/pages/TransactionsPage'));
 
-// add git commit
+// add git commit message for add all features. 
 
 export const router = createBrowserRouter([
   {
