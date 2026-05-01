@@ -1,13 +1,10 @@
 /* eslint-disable no-unused-vars */
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
-import { createPortal } from 'react-dom';
 import { IoCloseOutline } from 'react-icons/io5';
 
 const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
+  return (
     <AnimatePresence>
       {isVisible ? (
         <motion.div
@@ -54,8 +51,7 @@ const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>,
-    document.body
+    </AnimatePresence>
   );
 };
 
