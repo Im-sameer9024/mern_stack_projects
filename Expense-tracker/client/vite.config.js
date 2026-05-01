@@ -16,7 +16,7 @@ export default defineConfig({
       brotliSize: true,
       filename: 'dist/stats.html',
     }),
-    babel({ presets: [reactCompilerPreset()] }),
+    // babel({ presets: [reactCompilerPreset()] }),
   ],
   resolve: {
     alias: {
