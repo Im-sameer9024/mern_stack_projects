@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { lazy, useState } from "react";
 import { useClearUserData } from "../hooks/useSettings";
-import Modal from "@/shared/components/custom/Modal";
 import CustomButton from "@/shared/components/custom/CustomButton";
+
+const Modal = lazy(() => import("@/shared/components/custom/Modal"));
 
 const ClearUserData = () => {
   const [showClearModal, setShowClearModal] = useState(false);

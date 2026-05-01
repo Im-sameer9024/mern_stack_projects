@@ -1,8 +1,6 @@
 import { SidebarLinks } from '@/shared/data/data';
 import React, { lazy, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
 import { IoIosSwap } from 'react-icons/io';
 import clsx from 'clsx';
 import CustomButton from '../custom/CustomButton';
@@ -28,11 +26,9 @@ const SideBar = () => {
 
   return (
     <>
-      <motion.div
-        initial={false}
-        animate={{ width: isCollapsed ? 80 : 240 }}
-        transition={{ duration: 0.3 }}
-        className="bg-white border-r border-slate-200 h-screen p-3 relative flex flex-col items-center"
+      <div
+        style={{ width: isCollapsed ? 80 : 240 }}
+        className="bg-white border-r border-slate-200 h-screen p-3 relative flex flex-col items-center transition-[width] duration-300"
       >
         {/* Toggle Button */}
         <button
@@ -90,33 +86,25 @@ const SideBar = () => {
                   }
                 >
                   {/* Icon */}
-                  <motion.span
-                    animate={{
-                      scale: path.startsWith(item.link) ? 1.1 : 1,
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="text-lg flex items-center justify-center"
+                  <span
+                    style={{ transform: path.startsWith(item.link) ? 'scale(1.1)' : 'scale(1)' }}
+                    className="text-lg flex items-center justify-center transition-transform duration-200"
                   >
                     {item.icon}
-                  </motion.span>
+                  </span>
 
                   {/* Text */}
                   {!isCollapsed && (
-                    <motion.span
-                      initial={false}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-sm font-medium whitespace-nowrap"
-                    >
+                    <span className="text-sm font-medium whitespace-nowrap transition-opacity duration-200">
                       {item?.text}
-                    </motion.span>
+                    </span>
                   )}
                 </NavLink>
               );
             }
           })}
         </div>
-      </motion.div>
+      </div>
       <Modal
         isVisible={showLogoutModal}
         onClose={onClose}
