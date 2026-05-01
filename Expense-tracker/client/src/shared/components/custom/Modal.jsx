@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { IoCloseOutline } from 'react-icons/io5';
 
 const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
-  return (
+  return createPortal(
     <AnimatePresence>
       {isVisible ? (
         <motion.div
@@ -24,7 +25,7 @@ const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.25 }}
-            style={{ width: `min(92vw, ${width})`, maxHeight: '90vh' }}
+            style={{ width: `min(92vw, ${width})`, maxHeight: '100vh' }}
             className="
               bg-white/90 backdrop-blur-md
               p-5 rounded-xl shadow-xl
@@ -51,7 +52,8 @@ const Modal = ({ isVisible, content, onClose, width = '640px' }) => {
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
